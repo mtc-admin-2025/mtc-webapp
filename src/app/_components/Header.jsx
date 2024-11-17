@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { CircleUserRound, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,9 +29,10 @@ import { toast } from 'sonner';
 
 function Header() {
     const [categoryList, setCategoryList] = useState([]);
-    const [isLogin, setIsLogin] = useState(false);
-    const [user, setUser] = useState(null);
-    const [jwt, setJwt] = useState(null);
+    const [username, setUsername] = useState(''); 
+    const isLogin = sessionStorage.getItem('jwt') ? true : false;
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    const jwt = sessionStorage.getItem('jwt');
     const [totalCartItem, setTotalCartItem] = useState(0);
     const { updateCart, setUpdateCart } = useContext(UpdateCartContext);
     const [cartItemList, setCartItemList] = useState([]);
@@ -39,12 +40,26 @@ function Header() {
     const [subtotal, setSubTotal] = useState(0);
 
     useEffect(() => {
-        setIsLogin(sessionStorage.getItem('jwt') ? true : false);
-        setUser(JSON.parse(sessionStorage.getItem('user')));
-        setJwt(sessionStorage.getItem('jwt'));
+        getCategoryList();
+        getCartItems();
+        if (jwt) {
+            GlobalApi.getUser(jwt).then(user => {
+                setUsername(user.username); 
+            });
+        }
     }, []);
 
-    const getCartItems = useCallback(async () => {
+    useEffect(() => {
+        getCartItems();
+    }, [updateCart]);
+
+    const getCategoryList = () => {
+        GlobalApi.getCategory().then(resp => {
+            setCategoryList(resp.data.data);
+        });
+    };
+
+    const getCartItems = async () => {
         if (user) {
             const cartItemList_ = await GlobalApi.getCartItems(user.id, jwt);
             setTotalCartItem(cartItemList_?.length);
@@ -53,22 +68,7 @@ function Header() {
         } else {
             console.log("User is not logged in.");
         }
-    }, [user, jwt]);
-
-    const getCategoryList = useCallback(() => {
-        GlobalApi.getCategory().then(resp => {
-            setCategoryList(resp.data.data);
-        });
-    }, []);
-
-    useEffect(() => {
-        getCategoryList();
-        getCartItems();
-    }, [getCartItems, getCategoryList]);
-
-    useEffect(() => {
-        getCartItems();
-    }, [getCartItems, updateCart]);
+    };
 
     const calculateSubtotal = (items) => {
         const total = items.reduce((acc, item) => acc + item.amount, 0);
@@ -145,9 +145,12 @@ function Header() {
                     ) : (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <CircleUserRound
-                                    className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
-                                />
+                                <div className="flex flex-col items-center">
+                                    <CircleUserRound
+                                        className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
+                                    />
+                                    <span className="text-white text-xl mr-3">{username}</span> {/* Display username */}
+                                </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -169,4 +172,3 @@ function Header() {
 }
 
 export default Header;
- 
