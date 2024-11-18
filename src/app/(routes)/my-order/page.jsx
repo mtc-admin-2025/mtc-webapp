@@ -181,6 +181,32 @@ useEffect(() => {
     }
   };
 
+  const refundOrder = async (orderId, orderItems) => {
+    setLoading(true);
+    try {
+      // Call the API to process the refund
+      const refundResponse = await GlobalApi.refundOrder(orderId, jwt);
+  
+      // If refund is successful, update the order status to 'Returns'
+      if (refundResponse.success) {
+        // Update the status in the local order list
+        setOrderList((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === orderId ? { ...order, status: "Returns" } : order
+          )
+        );
+        
+        // Optionally: Filter orders based on current filter status
+        filterOrders(filterStatus);
+      } else {
+        console.error("Refund failed:", refundResponse.message);
+      }
+    } catch (error) {
+      console.error("Error refunding order:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div>
       <h2 className="p-3 bg-primary text-3xl font-bold text-center text-white mb-3">My Orders</h2>
