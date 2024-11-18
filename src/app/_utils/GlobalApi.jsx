@@ -146,6 +146,18 @@ const receiveOrder = (orderId, jwt) => {
     });
 };
 
+const refundOrder = (orderId, jwt) => {
+    return axiosClient.put(`/orders/${orderId}`, {
+        data: {
+            status: "Returns"
+        }
+    }, {
+        headers: {
+            Authorization: 'Bearer ' + jwt
+        }
+    });
+};
+
 const getProductStock = (productId, jwt) => {
     return axiosClient.get(`/products/${productId}`, {
         headers: {
@@ -183,6 +195,29 @@ const updateUser = (data, jwt) => {
     });
 };
 
+const updateRefundFields = (orderId, refundFields, jwt) => {
+    const formData = new FormData();
+
+    // Append refund fields to formData
+    formData.append('data', JSON.stringify({
+        refund_reason: refundFields.refund_reason,
+        refund_method: refundFields.refund_method,
+        account_number: refundFields.account_number,
+    }));
+
+    // Append proof file if it exists
+    if (refundFields.proof) {
+        formData.append('files.proof', refundFields.proof);
+    }
+
+    return axiosClient.put(`/orders/${orderId}`, formData, {
+        headers: {
+            Authorization: 'Bearer ' + jwt,
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
 const GlobalApi = {
     getCategory,
     getSliders,
@@ -203,6 +238,8 @@ const GlobalApi = {
     getProductStock,
     getUser,
     updateUser,
+    refundOrder,
+    updateRefundFields,
 }
 
 export default GlobalApi;
