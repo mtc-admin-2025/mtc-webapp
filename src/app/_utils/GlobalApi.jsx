@@ -93,6 +93,7 @@ const getMyOrder=(userId, jwt)=>axiosClient.get('/orders?filters[userId][$eq]='+
         variation:item.attributes.variation,
         paymentMethod:item.attributes.paymentMethod,
         address: item.attributes.address,
+        delivery_assignment: item.attributes.delivery_assignment,
     }));
 
     return orderList;

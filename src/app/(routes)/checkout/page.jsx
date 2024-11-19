@@ -280,7 +280,7 @@ function Checkout() {
 
           <div className='p-4 bg-white shadow rounded-lg'>
             <h2 className='font-bold text-2xl mb-4'>Your Order</h2>
-            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} />
+            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={onClearCart}/>
             <div className='mt-4'>
               <Select onValueChange={applyVoucher} defaultValue="0">
                 <SelectTrigger className="w-full">
