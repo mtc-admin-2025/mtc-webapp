@@ -21,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { getFromStorage } from '@/app/_utils/sessionStorage';
+import { toast } from 'sonner'
 
 function MyOrder() {
   const [user, setUser] = useState(null);
@@ -70,6 +71,7 @@ function MyOrder() {
   const handleEditRefundFields = async (orderId) => {
     try {
       await GlobalApi.updateRefundFields(orderId, refundFields, jwt);
+      toast("Request sent successfully");
       setOrderList((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, ...refundFields, status: "Returns" } : order
@@ -139,6 +141,7 @@ useEffect(() => {
       await GlobalApi.cancelOrder(orderId, jwt);
       await returnToStock(orderItems);
 
+      toast("Order Cancelled");
       setOrderList((prevOrders) =>
         prevOrders.map(order =>
           order.id === orderId ? { ...order, status: "Cancelled" } : order
@@ -168,6 +171,7 @@ useEffect(() => {
 
       await GlobalApi.receiveOrder(orderId, jwt); 
 
+      toast("Order Received successfully");
       setOrderList((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId ? { ...order, status: "Completed" } : order
@@ -190,6 +194,7 @@ useEffect(() => {
       // If refund is successful, update the order status to 'Returns'
       if (refundResponse.success) {
         // Update the status in the local order list
+        toast("Request sent successfully");
         setOrderList((prevOrders) =>
           prevOrders.map((order) =>
             order.id === orderId ? { ...order, status: "Returns" } : order
