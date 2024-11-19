@@ -302,12 +302,22 @@ useEffect(() => {
                       <span>{moment(item?.createdAt).format('DD/MMM/yyyy')}</span>
                     </h2>
                     <h2>
-                      <span className="font-bold mr-2">Status:</span>
-                      <span>{item?.status}</span>
-                    </h2>
-                    <h2>
                       <span className="font-bold mr-2">Total Amount:</span>
                       <span>{item?.totalOrderAmount}</span>
+                    </h2>
+                    <h2>
+                      <span className="font-bold mr-2">Status:</span>
+                      <span>
+                        {item?.status}
+                        {/* Display status message based on the order status */}
+                        {item?.status === 'Pending' && <span className="text-gray-500 ml-2 text-xs">(Waiting for seller to confirm)</span>}
+                        {item?.status === 'Confirmed' && <span className="text-gray-500 ml-2 text-xs">(Processing for shipping)</span>}
+                        {item?.status === 'To Ship' && <span className="text-gray-500 ml-2 text-xs">(Package on the way)</span>}
+                        {item?.status === 'Delivered' && <span className="text-gray-500 ml-2 text-xs">(Successfully delivered)</span>}
+                        {item?.status === 'Completed' && <span className="text-gray-500 ml-2 text-xs">(Transaction Completed)</span>}
+                        {item?.status === 'Cancelled' && <span className="text-gray-500 ml-2 text-xs">(Transaction Cancelled)</span>}
+                        {item?.status === 'Returns' && <span className="text-gray-500 ml-2 text-xs">(Return/Refund requested)</span>}
+                      </span>
                     </h2>
                   </div>
                 </CollapsibleTrigger>
