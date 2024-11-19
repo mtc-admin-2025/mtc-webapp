@@ -56,7 +56,7 @@ function MyOrder() {
     refund_reason: "",
     refund_method: "",
     account_number: "",
-    proof: null, 
+    refund_proof: null, 
     status: "Returns",
   });
   
@@ -382,7 +382,7 @@ useEffect(() => {
                                 refund_reason: item.refund_reason || "",
                                 refund_method: item.refund_method || "",
                                 account_number: item.account_number || "",
-                                proof: null, // Initialize proof as null
+                                refund_proof: null, // Initialize refund_proof as null
                               });
                             }}
                           >
@@ -425,7 +425,7 @@ useEffect(() => {
                               onChange={(e) => handleInputChange("account_number", e.target.value)}
                             />
                             
-                            {/* Upload Proof */}
+                            {/* Upload refund_proof */}
                             <input
                               type="file"
                               accept="image/*"
@@ -434,13 +434,13 @@ useEffect(() => {
                                 const file = e.target.files[0];
                                 setRefundFields((prev) => ({
                                   ...prev,
-                                  proof: file, // Save the uploaded file
+                                  refund_proof: file, // Save the uploaded file
                                 }));
                               }}
                             />
-                            {refundFields.proof && (
+                            {refundFields.refund_proof && (
                               <p className="text-sm text-gray-600">
-                                Uploaded file: {refundFields.proof.name}
+                                Uploaded file: {refundFields.refund_proof.name}
                               </p>
                             )}
                           </div>

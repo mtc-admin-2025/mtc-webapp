@@ -205,9 +205,9 @@ const updateRefundFields = (orderId, refundFields, jwt) => {
         account_number: refundFields.account_number,
     }));
 
-    // Append proof file if it exists
-    if (refundFields.proof) {
-        formData.append('files.proof', refundFields.proof);
+    // Append refund_proof file if it exists
+    if (refundFields.refund_proof) {
+        formData.append('files.refund_proof', refundFields.refund_proof);
     }
 
     return axiosClient.put(`/orders/${orderId}`, formData, {
