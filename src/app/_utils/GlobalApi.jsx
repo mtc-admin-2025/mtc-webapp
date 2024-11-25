@@ -20,6 +20,17 @@ const getAllProducts = () =>
         return resp.data.data;
       });
 
+const getAllOrders = () => 
+    axiosClient.get('/orders?populate=*')
+        .then(resp => {
+            console.log("Orders fetched:", resp.data.data); // Debug log
+            return resp.data.data;
+        })
+        .catch(error => {
+            console.error("Error fetching orders:", error); // Debug log
+            return [];
+        });
+
 const getProductsByBrand = (brand) =>
     axiosClient.get(`/products?filters[brands][name][$in]=${brand}&pagination[limit]=-1&populate=*`)
       .then(resp => {
@@ -241,6 +252,7 @@ const GlobalApi = {
     updateUser,
     refundOrder,
     updateRefundFields,
+    getAllOrders
 }
 
 export default GlobalApi;

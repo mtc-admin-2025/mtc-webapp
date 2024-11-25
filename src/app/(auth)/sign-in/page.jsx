@@ -38,18 +38,37 @@ function SignIn() {
 
     const onSignIn = () => {
         setLoader(true);
-        GlobalApi.SignIn(identifier, password).then(resp => {
-            sessionStorage.setItem('user', JSON.stringify(resp.data.user));
-            sessionStorage.setItem('jwt', resp.data.jwt);
-            toast("Login Successfully");
-            router.push('/');
-            setLoader(false);
-        }, (e) => {
-            console.log(e);
-            toast(e?.response?.data?.error?.message);
-            setLoader(false);
-        });
-    }
+        GlobalApi.SignIn(identifier, password).then(
+            (resp) => {
+                const user = resp.data.user; // Get user data
+                const jwt = resp.data.jwt;   // Get JWT
+                
+                console.log("User object:", user); // Debug user structure
+                console.log("Username:", user.username); // Verify username
+    
+                sessionStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('jwt', jwt);
+    
+                toast("Login Successfully");
+    
+                // Check username and redirect accordingly
+                if (user.username === 'admin') {
+                    console.log("Redirecting to admin dashboard...");
+                    router.push('/admin-dashboard'); // Redirect to admin page
+                } else {
+                    console.log("Redirecting to default page...");
+                    router.push('/'); // Redirect to default user landing page
+                }
+    
+                setLoader(false);
+            },
+            (e) => {
+                console.error("Sign-in error:", e); // Log errors for debugging
+                toast(e?.response?.data?.error?.message || "An error occurred");
+                setLoader(false);
+            }
+        );
+    };
 
     return (
         <div className='flex items-baseline justify-center my-20'>
