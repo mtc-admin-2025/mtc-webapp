@@ -143,26 +143,35 @@ function Header() {
                         </Link>
                     ) : (
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <div className="flex flex-col items-center">
-                                    <CircleUserRound
-                                        className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
-                                    />
-                                    <span className="text-white text-xl mr-3">{user?.username}</span> {/* Display the username */}
-                                </div>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <Link href={'/my-profile'}>
-                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <DropdownMenuTrigger asChild>
+                            <div className="flex flex-col items-center">
+                                <CircleUserRound
+                                    className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
+                                />
+                                <span className="text-white text-xl mr-3">{user?.username}</span> {/* Display the username */}
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            
+                            {/* Conditionally render Dashboard link if username is "admin" */}
+                            {user?.username === "admin" && (
+                                <Link href={'/admin-dashboard'}>
+                                    <DropdownMenuItem>Dashboard</DropdownMenuItem>
                                 </Link>
-                                <Link href={'/my-order'}>
-                                    <DropdownMenuItem>My Order</DropdownMenuItem>
-                                </Link>
-                                <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            )}
+                    
+                            <Link href={'/my-profile'}>
+                                <DropdownMenuItem>Profile</DropdownMenuItem>
+                            </Link>
+                            <Link href={'/my-order'}>
+                                <DropdownMenuItem>My Order</DropdownMenuItem>
+                            </Link>
+                            <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    
                     )}
                 </div>
             </div>

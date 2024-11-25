@@ -7,6 +7,8 @@ function AdminDashboard() {
     const [loading, setLoading] = useState(true); // Loading state
     const [filteredOrders, setFilteredOrders] = useState([]); // State for filtered orders
     const [filterDateRange, setFilterDateRange] = useState(''); // Date range filter
+    const [startDate, setStartDate] = useState(''); // Start date for specific range
+    const [endDate, setEndDate] = useState(''); // End date for specific range
     const [totalAmount, setTotalAmount] = useState(0); // Total amount of filtered orders
 
     // Fetch all orders with "Completed" status on component mount
@@ -31,10 +33,14 @@ function AdminDashboard() {
         return ordersList.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
     };
 
-    // Filter orders by date range (Daily, Weekly, Monthly, Yearly)
+    // Filter orders by predefined date ranges (Daily, Weekly, Monthly, Yearly)
     const handleFilterDateRangeChange = (event) => {
         const selectedRange = event.target.value;
         setFilterDateRange(selectedRange);
+
+        // Clear specific date range filter when selecting predefined ranges
+        setStartDate('');
+        setEndDate('');
 
         const currentDate = new Date();
         let startDate;
@@ -72,6 +78,24 @@ function AdminDashboard() {
         calculateTotal(filtered);
     };
 
+    // Filter orders by specific date range (Start Date and End Date)
+    const handleCustomDateRangeFilter = () => {
+        let filtered = orders;
+
+        // Only filter if both start and end dates are provided
+        if (startDate && endDate) {
+            filtered = orders.filter(order => {
+                const orderDate = new Date(order.attributes.createdAt);
+                return orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
+            });
+        }
+
+        // Sort the filtered orders by the latest first
+        setFilteredOrders(sortOrders(filtered));
+        calculateTotal(filtered);
+        setFilterDateRange('');
+    };
+
     // Calculate the total order amount
     const calculateTotal = (ordersList) => {
         const total = ordersList.reduce((sum, order) => {
@@ -100,6 +124,32 @@ function AdminDashboard() {
                     <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                 </select>
+            </div>
+
+            {/* Custom Date Range Filter */}
+            <div className="mb-4">
+                <label htmlFor="startDate" className="mr-2 font-semibold ">Start Date:</label>
+                <input
+                    type="date"
+                    id="startDate"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                />
+                <label htmlFor="endDate" className="mr-2 font-semibold ml-10">End Date:</label>
+                <input
+                    type="date"
+                    id="endDate"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                />
+                <button
+                onClick={handleCustomDateRangeFilter}
+                className="bg-primary text-white px-4 py-2 rounded ml-10"
+            >
+                Apply Custom Date Filter
+            </button>
             </div>
 
             {loading ? (
