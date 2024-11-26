@@ -63,6 +63,7 @@ function Checkout() {
   const [voucherDiscount, setVoucherDiscount] = useState(0);
   const [appliedVoucher, setAppliedVoucher] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false); 
+  const [payment_proof, setPaymentProof] = useState("");
 
   const router = useRouter();
 
@@ -152,6 +153,7 @@ function Checkout() {
         userId: user.id,
         paymentMethod,  
         notes,
+        payment_proof,
       },
     };
 
@@ -223,7 +225,7 @@ function Checkout() {
 
   useEffect(() => {
     validateFields();
-  }, [validateFields, email, phone, username, address, paymentMethod, isEmailValid, isPhoneValid,router]);
+  }, [validateFields, email, phone, username, address, paymentMethod, isEmailValid, isPhoneValid,router , payment_proof]);
 
   return (
     <div className="p-4 md:p-6 ">
@@ -266,12 +268,15 @@ function Checkout() {
                 className="p-2 border rounded h-24"
               />
                <div className="mt-4">
+               <h2 className='ml-2 mb-1  text-gray-500 text-xs'>For orders that exceeds ₱1000, Cash On Delivery is prohibited</h2>
               <Select onValueChange={setPaymentMethod} value={paymentMethod} defaultValue="credit-card">
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select Payment Method" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Cash on Delivery">Cash on Delivery</SelectItem>
+                <SelectItem value="Cash on Delivery" disabled={parseFloat(calculateTotalAmount()) > 1000}>Cash on Delivery</SelectItem>
+                <SelectItem value="Gcash">Gcash</SelectItem>
+                <SelectItem value="Online Banking">Online Banking</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -280,7 +285,7 @@ function Checkout() {
 
           <div className='p-4 bg-white shadow rounded-lg'>
             <h2 className='font-bold text-2xl mb-4'>Your Order</h2>
-            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={onClearCart}/>
+            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={(onClearCart)}/>
             <div className='mt-4'>
               <Select onValueChange={applyVoucher} defaultValue="0">
                 <SelectTrigger className="w-full">
@@ -304,7 +309,7 @@ function Checkout() {
         <Button 
           onClick={onApprove} 
           className="w-full mt-5" 
-          disabled={!isFormValid} // Disable if form is not valid
+          disabled={!isFormValid}
         >
           Place Order
         </Button>
