@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 
 const axiosClient=axios.create({
-    baseURL:'https://deserving-action-5569f72002.strapiapp.com/api'
+    baseURL:'https://typical-bell-38b79c7d7d.strapiapp.com/api'
 })
 
 const getCategory=()=>axiosClient.get('/categories?populate=*');
@@ -230,6 +230,26 @@ const updateRefundFields = (orderId, refundFields, jwt) => {
     });
 };
 
+const updateCartItemQuantity = (id, newQuantity, jwt, newAmount) => {
+    return axiosClient.put(`/user-carts/${id}`, {
+        data: {
+            quantity: newQuantity,
+            amount: newAmount  // Add the new amount here
+        }
+    }, {
+        headers: {
+            Authorization: `Bearer ${jwt}`
+        }
+    })
+    .then(response => {
+        return response.data;
+    })
+    .catch(error => {
+        console.error("Error updating cart item quantity:", error);
+        return false;
+    });
+};
+
 const GlobalApi = {
     getCategory,
     getSliders,
@@ -252,7 +272,8 @@ const GlobalApi = {
     updateUser,
     refundOrder,
     updateRefundFields,
-    getAllOrders
+    getAllOrders,
+    updateCartItemQuantity,
 }
 
 export default GlobalApi;

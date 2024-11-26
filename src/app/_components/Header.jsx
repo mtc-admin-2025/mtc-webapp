@@ -1,3 +1,4 @@
+"use client";
 import { Button } from '@/components/ui/button';
 import { CircleUserRound, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
@@ -94,6 +95,29 @@ function Header() {
             toast.error('Failed to clear the cart');
         }
     };
+    const onUpdateQuantity = async (id, newQuantity) => {
+        const itemToUpdate = cartItemList.find(item => item.id === id);
+    
+        if (itemToUpdate) {
+            const previousAmount = itemToUpdate.amount;
+            const previousQuantity = itemToUpdate.quantity;
+    
+            if (previousQuantity > 0) {
+                const answer = previousAmount / previousQuantity;
+                const newAmount = answer * newQuantity;
+    
+                const success = await GlobalApi.updateCartItemQuantity(id, newQuantity, jwt, newAmount);
+                if (success) {
+                    toast('Quantity updated!');
+                    setUpdateCart(prev => !prev);  // Trigger a cart update
+                } else {
+                    toast.error('Failed to update quantity');
+                }
+            } else {
+                toast.error('Invalid quantity data');
+            }
+        }
+    };
 
     return (
         <div className='bg-green-500'>
@@ -120,7 +144,7 @@ function Header() {
                             <SheetHeader>
                                 <SheetTitle className="bg-primary text-white font-bold text-xl p-2">My Cart</SheetTitle>
                                 <SheetDescription>
-                                    <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={onClearCart} />
+                                    <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={onClearCart} onUpdateQuantity={onUpdateQuantity}/>
                                 </SheetDescription>
                             </SheetHeader>
                             <SheetClose asChild>

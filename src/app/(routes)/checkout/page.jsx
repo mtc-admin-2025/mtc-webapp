@@ -103,6 +103,31 @@ function Checkout() {
     }
   };
 
+  
+  const onUpdateQuantity = async (id, newQuantity) => {
+    const itemToUpdate = cartItemList.find(item => item.id === id);
+
+    if (itemToUpdate) {
+        const previousAmount = itemToUpdate.amount;
+        const previousQuantity = itemToUpdate.quantity;
+
+        if (previousQuantity > 0) {
+            const answer = previousAmount / previousQuantity;
+            const newAmount = answer * newQuantity;
+
+            const success = await GlobalApi.updateCartItemQuantity(id, newQuantity, jwt, newAmount);
+            if (success) {
+                toast('Quantity updated!');
+                setUpdateCart(prev => !prev);  // Trigger a cart update
+            } else {
+                toast.error('Failed to update quantity');
+            }
+        } else {
+            toast.error('Invalid quantity data');
+        }
+    }
+};
+
   useEffect(() => {
     let total = 0;
     cartItemList.forEach(element => {
@@ -285,7 +310,7 @@ function Checkout() {
 
           <div className='p-4 bg-white shadow rounded-lg'>
             <h2 className='font-bold text-2xl mb-4'>Your Order</h2>
-            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={(onClearCart)}/>
+            <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={(onClearCart)} onUpdateQuantity={(onUpdateQuantity)}/>
             <div className='mt-4'>
               <Select onValueChange={applyVoucher} defaultValue="0">
                 <SelectTrigger className="w-full">

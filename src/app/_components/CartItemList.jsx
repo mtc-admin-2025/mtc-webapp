@@ -12,68 +12,106 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import React from 'react';
+import React, { useState } from 'react';
 
-function CartItemList({ cartItemList, onDeleteItem, onClearCart }) {
+function CartItemList({ cartItemList, onDeleteItem, onClearCart, onUpdateQuantity }) {
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
+    const [openClearCartDialog, setOpenClearCartDialog] = useState(false);
+
+    // Handle delete item click
+    const handleDeleteItem = (itemId) => {
+        setItemToDelete(itemId);
+        setOpenDeleteDialog(true);
+    };
+
+    // Handle clear cart click
+    const handleClearCart = () => {
+        setOpenClearCartDialog(true);
+    };
+
     return (
         <div>
-            <div className='overflow-auto'>
-                {cartItemList.map((cart, index) => (
-                    <div className='flex justify-between items-center p-2 mb-5' key={index}>
-                        <div className='flex gap-6 items-center'>
-                            <Image
-                                src={cart.image}
-                                width={90}
-                                height={90}
-                                alt={cart.name}
-                                className='border p-2'
-                            />
-                            <div>
-                                <h2 className='font-bold'>{cart.name}</h2>
-                                <h2 className='font-bold'>{cart.variation}</h2>
-                                <h2>Quantity: {cart.quantity}</h2>
-                                <h2 className='text-lg font-bold'>₱{cart.amount}</h2>
-                            </div>
-                        </div>
-                        <AlertDialog>
+            {cartItemList.map(item => (
+                <div key={item.id} className="flex justify-between items-center py-2">
+                    <img src={item.image} alt={item.name} className="w-20 h-20 object-cover" />
+                    <div className="flex flex-col">
+                        <span className='font-semibold text-lg'>{item.name}</span>
+                        <span className='text-lg'>{item.variation}</span>
+                        <span className='text-lg font-semibold'>₱{item.price}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                             <AlertDialogTrigger>
-                                <Trash2Icon className='cursor-pointer text-red-600' />
+                                <Trash2Icon onClick={() => handleDeleteItem(item.id)} className="text-red-500 cursor-pointer" />
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle className='text-2xl'>
-                                        Do you want to remove this item?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className='text-xl'>
-                                        <h2>{cart.name} ({cart.variation})</h2>
+                                    <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to delete this item from your cart?
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                    <AlertDialogAction className='cursor-pointer' onClick={() => onDeleteItem(cart.id)}>Yes</AlertDialogAction>
-                                    <AlertDialogCancel>No</AlertDialogCancel>
+                                    <AlertDialogCancel onClick={() => setOpenDeleteDialog(false)}>
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => {
+                                            onDeleteItem(itemToDelete);
+                                            setOpenDeleteDialog(false);
+                                        }}
+                                    >
+                                        Delete
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
+                        <span className=''>Quantity</span>
+                        <input
+                            type="number"
+                            value={item.quantity}
+                            min="1"
+                            onChange={(e) => onUpdateQuantity(item.id, parseInt(e.target.value))}
+                            className="w-16 p-1 border"
+                        />
+                        <span className='font-bold text-xl'>₱{item.amount}</span>
                     </div>
-                ))}
-                <div className='flex justify-end mt-5'>
-                    <AlertDialog>
-                        <AlertDialogTrigger>
-                            <Button disabled={cartItemList.length === 0}
-                                className='text-red-600 bg-slate-50 hover:bg-red-600 hover:text-white'>Clear Cart</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className='text-2xl'>Do you want to clear your cart?</AlertDialogTitle>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogAction className='cursor-pointer' onClick={onClearCart}>Yes</AlertDialogAction>
-                                <AlertDialogCancel>No</AlertDialogCancel>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
                 </div>
-            </div>
+            ))}
+
+            {/* Clear Cart Dialog */}
+            {cartItemList.length > 0 && (
+                <AlertDialog open={openClearCartDialog} onOpenChange={setOpenClearCartDialog}>
+                    <AlertDialogTrigger>
+                        <button onClick={handleClearCart} className="bg-red-500 mt-4 text-white h-10 w-24 rounded-lg">
+                            Clear Cart
+                        </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Clear Cart</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to clear all items in your cart?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setOpenClearCartDialog(false)}>
+                                Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={() => {
+                                    onClearCart();
+                                    setOpenClearCartDialog(false);
+                                }}
+                            >
+                                Clear Cart
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
         </div>
     );
 }
