@@ -2,7 +2,7 @@
 const nextConfig = {
     reactStrictMode:true,
     images:{
-        domains:['192.168.0.105','res.cloudinary.com','typical-bell-38b79c7d7d.media.strapiapp.com']
+        domains:['192.168.0.105','res.cloudinary.com','deserving-action-5569f72002.media.strapiapp.com']
     },
     onDemandEntries: {
         maxInactiveAge: 25 * 1000,
