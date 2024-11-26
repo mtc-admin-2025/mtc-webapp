@@ -185,7 +185,7 @@ function AdminDashboard() {
 
                             {/* Total Amount */}
                             <div className="font-bold text-2xl text-green-800">
-                                Total Order Amount: ₱{totalAmount.toFixed(2)}
+                                Total Sales Amount: ₱{totalAmount.toFixed(2)}
                             </div>
                         </>
                     )}
