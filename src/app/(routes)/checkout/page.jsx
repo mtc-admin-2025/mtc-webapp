@@ -51,7 +51,7 @@ function Checkout() {
 
   const [phone, setPhone] = useState("");
   const [isPhoneValid, setIsPhoneValid] = useState(true); 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(user?.username || "");
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isSuggestionsVisible, setIsSuggestionsVisible] = useState(false);
