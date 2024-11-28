@@ -55,6 +55,9 @@ function SignIn() {
                 if (user.username === 'admin') {
                     console.log("Redirecting to admin dashboard...");
                     router.push('/admin-dashboard'); // Redirect to admin page
+                } else if (user.username.toLowerCase().includes('delivery')) {
+                    console.log("Redirecting to rider page...");
+                    router.push('/rider-page'); // Redirect to rider page
                 } else {
                     console.log("Redirecting to default page...");
                     router.push('/'); // Redirect to default user landing page

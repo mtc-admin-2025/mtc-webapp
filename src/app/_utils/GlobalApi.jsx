@@ -250,6 +250,54 @@ const updateCartItemQuantity = (id, newQuantity, jwt, newAmount) => {
     });
 };
 
+const pickOrder = (orderId) => {
+    return axiosClient.put(
+        `/orders/${orderId}`,
+        {
+            data: {
+                status: "To Ship",
+            },
+        }
+    );
+};
+
+const deliverOrder = (orderId) => {
+    return axiosClient.put(
+        `/orders/${orderId}`,
+        {
+            data: {
+                status: "Delivered",
+            },
+        }
+    );
+};
+
+const updateDeliverFields = (orderId, deliverFields, jwt) => {
+    const formData = new FormData();
+
+    // Append delivery fields to formData
+    formData.append('data', JSON.stringify({
+        address: deliverFields.address,
+        delivery_assignment: deliverFields.delivery_assignment,
+        email: deliverFields.email,
+        phone: deliverFields.phone,
+        paymentMethod: deliverFields.paymentMethod,
+        totalOrderAmount: deliverFields.totalOrderAmount,
+    }));
+
+    // Append proof file if it exists
+    if (deliverFields.delivery_proof && deliverFields.delivery_proof.data) {
+        formData.append('files.delivery_proof', deliverFields.delivery_proof.data);
+    }
+
+    return axiosClient.put(`/orders/${orderId}`, formData, {
+        headers: {
+            Authorization: 'Bearer ' + jwt,
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
 const GlobalApi = {
     getCategory,
     getSliders,
@@ -274,6 +322,9 @@ const GlobalApi = {
     updateRefundFields,
     getAllOrders,
     updateCartItemQuantity,
+    pickOrder,
+    deliverOrder,
+    updateDeliverFields,
 }
 
 export default GlobalApi;
