@@ -60,6 +60,30 @@ function MyOrder() {
     refund_proof: null, 
     status: "Returns",
   });
+
+  const [selectedFile, setSelectedFile] = useState(null); // State for selected file
+
+  const handlePaymentProofUpload = async (orderId) => {
+    if (!selectedFile) {
+      toast.error("Please select a file first.");
+      return;
+    }
+  
+    const orderFields = {
+      payment_proof: {
+        data: selectedFile, // Include the selected file
+      },
+    };
+  
+    try {
+      await GlobalApi.updateOrderFields(orderId, orderFields, jwt); // Call the API
+      toast.success("Payment proof uploaded successfully!");
+      // Update the order list or refresh the data as needed
+    } catch (error) {
+      console.error("Error uploading payment proof:", error);
+      toast.error("Failed to upload payment proof. Please try again.");
+    }
+  };
   
   const handleInputChange = (field, value) => {
     setRefundFields((prev) => ({
@@ -324,6 +348,10 @@ useEffect(() => {
                         {item?.status === 'Returns' && <span className="text-gray-500 ml-2 text-xs">(Return/Refund requested)</span>}
                       </span>
                     </h2>
+                    <h2>
+                      <span className="font-bold mr-2">Payment Method:</span>
+                      <span>{item?.paymentMethod}</span>
+                    </h2>
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -331,6 +359,48 @@ useEffect(() => {
                     <MyOrderItem orderItem={order} key={index_} />
                   ))}
                   <div className="ml-[1050px] flex gap-2">
+
+                    {/* Upload Payment Proof Button */}
+                    {item.status === "Pending" && ["Gcash", "Online Banking"].includes(item.paymentMethod) && (
+                      <AlertDialog>
+                        <AlertDialogTrigger>
+                          <button className="px-4 py-2 mt-2 text-sm rounded font-bold text-white bg-blue-500 hover:bg-blue-600">
+                            Upload Payment Proof
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Upload Payment Proof</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Please select and upload your payment proof.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="flex flex-col space-y-4">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                setSelectedFile(file); // Set the file to state
+                              }}
+                            />
+                            {selectedFile && (
+                              <p className="text-sm text-gray-600">Selected file: {selectedFile.name}</p>
+                            )}
+                          </div>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                handlePaymentProofUpload(item.id); // Call upload handler
+                              }}
+                            >
+                              Upload
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
 
                     {/* Cancel Order Button */}
                     {(item.status === "Pending" || item.status === "Confirmed") && (

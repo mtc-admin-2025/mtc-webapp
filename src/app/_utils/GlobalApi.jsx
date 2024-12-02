@@ -298,6 +298,28 @@ const updateDeliverFields = (orderId, deliverFields, jwt) => {
     });
 };
 
+const updateOrderFields = (orderId, orderFields, jwt) => {
+    const formData = new FormData();
+
+    // Append delivery fields to formData
+    formData.append('data', JSON.stringify({
+        payment_proof: orderFields.payment_proof,
+       
+    }));
+
+    // Append proof file if it exists
+    if (orderFields.payment_proof && orderFields.payment_proof.data) {
+        formData.append('files.payment_proof', orderFields.payment_proof.data);
+    }
+
+    return axiosClient.put(`/orders/${orderId}`, formData, {
+        headers: {
+            Authorization: 'Bearer ' + jwt,
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
 const GlobalApi = {
     getCategory,
     getSliders,
@@ -325,6 +347,7 @@ const GlobalApi = {
     pickOrder,
     deliverOrder,
     updateDeliverFields,
+    updateOrderFields,
 }
 
 export default GlobalApi;

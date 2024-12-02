@@ -139,7 +139,9 @@ function Header() {
                         className='cursor-pointer' 
                     />
                 </Link>
+                {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
                     <h2 className='text-2xl font-bold text-yellow-200'>RHODESIAN ONLINE</h2>
+                )}
                 </div>
                 <div className='flex gap-5 items-center'>
                 {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
