@@ -86,6 +86,15 @@ function Checkout() {
     }
   }, [getCartItems, router, jwt, user, isLoading]);
 
+  useEffect(() => {
+      getCategoryList();
+      getCartItems();
+  }, [getCartItems, getCategoryList]);
+
+  useEffect(() => {
+      getCartItems();
+  }, [getCartItems, updateCart]);
+
   const onDeleteItem = (id) => {
     GlobalApi.deleteCartItem(id, jwt).then(() => {
       toast('Item removed!');
