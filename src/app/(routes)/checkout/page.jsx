@@ -178,7 +178,6 @@ function Checkout() {
         userId: user.id,
         paymentMethod,  
         notes,
-        payment_proof,
       },
     };
 
@@ -250,7 +249,7 @@ function Checkout() {
 
   useEffect(() => {
     validateFields();
-  }, [validateFields, email, phone, username, address, paymentMethod, isEmailValid, isPhoneValid,router , payment_proof]);
+  }, [validateFields, email, phone, username, address, paymentMethod, isEmailValid, isPhoneValid,router]);
 
   return (
     <div className="p-4 md:p-6 ">
