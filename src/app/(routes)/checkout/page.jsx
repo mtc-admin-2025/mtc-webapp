@@ -86,11 +86,7 @@ function Checkout() {
     }
   }, [getCartItems, router, jwt, user, isLoading]);
 
-  useEffect(() => {
-      getCategoryList();
-      getCartItems();
-  }, [getCartItems, getCategoryList]);
-
+ 
   useEffect(() => {
       getCartItems();
   }, [getCartItems, updateCart]);
