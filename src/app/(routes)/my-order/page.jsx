@@ -324,7 +324,7 @@ useEffect(() => {
                   <div className={`p-3 m-2 flex flex-col sm:flex-row gap-2 sm:gap-10 rounded-md ${bgColor}`}>
                     <h2>
                       <span className="font-bold mr-2">Order ID:</span>
-                      <span>{item?.paymentId?.substring(0, 8)}</span>
+                      <span>{order.id?.substring(0, 8)}</span>
                     </h2>
                     <h2>
                       <span className="font-bold mr-2">Order Date: </span>
