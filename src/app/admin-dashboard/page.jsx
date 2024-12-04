@@ -172,7 +172,7 @@ function AdminDashboard() {
                                 <tbody>
                                     {filteredOrders.map(order => (
                                         <tr key={order.id}>
-                                            <td className="border border-gray-300 px-4 py-2">{order.id}</td>
+                                            <td className="border border-gray-300 px-4 py-2">{order.attributes.paymentId }</td>
                                             <td className="border border-gray-300 px-4 py-2">{order.attributes.username || "N/A"}</td>
                                             <td className="border border-gray-300 px-4 py-2">₱{order.attributes.totalOrderAmount || "0.00"}</td>
                                             <td className="border border-gray-300 px-4 py-2">
