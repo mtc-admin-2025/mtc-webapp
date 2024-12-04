@@ -170,7 +170,7 @@ function RiderPage() {
                                 ${activeCollapsible === order.attributes?.paymentId ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                                 onClick={() => handleCollapsibleToggle(order.attributes?.paymentId)}
                             >
-                                Order ID: {order.attributes?.paymentId}
+                                Order ID: {order.attributes?.paymentId.substring(0, 8)}
                             </CollapsibleTrigger>
                             <CollapsibleContent className={`border p-4 ${activeCollapsible === order.attributes?.paymentId ? 'bg-green-100' : 'bg-white'}`}>
                                 <div className="mb-2 font-bold text-lg">
