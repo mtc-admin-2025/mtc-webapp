@@ -164,15 +164,15 @@ function RiderPage() {
             {filteredOrders.length > 0 ? (
                 <div className="space-y-4">
                     {filteredOrders.map((order) => (
-                        <Collapsible key={order.id} open={activeCollapsible === order.id}>
+                        <Collapsible key={order.attributes?.paymentId} open={activeCollapsible === order.attributes?.paymentId}>
                             <CollapsibleTrigger 
                                 className={`px-6 py-3 text-left font-medium rounded-lg transition-colors duration-300 ease-in-out 
-                                ${activeCollapsible === order.id ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                                onClick={() => handleCollapsibleToggle(order.id)}
+                                ${activeCollapsible === order.attributes?.paymentId ? 'bg-green-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                                onClick={() => handleCollapsibleToggle(order.attributes?.paymentId)}
                             >
-                                Order ID: {order.id}
+                                Order ID: {order.attributes?.paymentId}
                             </CollapsibleTrigger>
-                            <CollapsibleContent className={`border p-4 ${activeCollapsible === order.id ? 'bg-green-100' : 'bg-white'}`}>
+                            <CollapsibleContent className={`border p-4 ${activeCollapsible === order.attributes?.paymentId ? 'bg-green-100' : 'bg-white'}`}>
                                 <div className="mb-2 font-bold text-lg">
                                     <strong>Total Amount:</strong> ₱{order.attributes?.totalOrderAmount || 'N/A'}
                                 </div>
