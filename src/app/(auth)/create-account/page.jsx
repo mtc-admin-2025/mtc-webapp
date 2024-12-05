@@ -46,7 +46,7 @@ function CreateAccount() {
             sessionStorage.setItem('user',JSON.stringify(resp.data.user));
             sessionStorage.setItem('jwt',resp.data.jwt);
             toast("Account Created Successfully")
-            router.push('/account-verification');
+            router.push('/');
             setLoader(false)
         },(e)=>{
             setLoader(false)
