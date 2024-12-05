@@ -46,7 +46,7 @@ function CreateAccount() {
             sessionStorage.setItem('user',JSON.stringify(resp.data.user));
             sessionStorage.setItem('jwt',resp.data.jwt);
             toast("Account Created Successfully")
-            router.push('/');
+            router.push('/account-verification');
             setLoader(false)
         },(e)=>{
             setLoader(false)
@@ -69,10 +69,11 @@ function CreateAccount() {
                 <div className='flex'>
                 <Input className='h-10 rounded-lg text-gray-950 mr-5'type="password" id="passwordField" placeholder="enter password" onChange={(e) => setPassword(e.target.value)} />
                 <Button className='bg-primary rounded-md w-20'ref={showPasswordBtnRef} onClick={togglePasswordVisibility} disabled={!(password)}>Show</Button></div>
-                <Button onClick={()=>onCreateAccount()}
+                
+                <Link href={'/account-verification'}><Button onClick={()=>onCreateAccount()}
                     disabled={!(username||email||password)}
                 >
-                   {loader?<LoaderIcon className='animate-spin'/>:'Create an Account'} </Button>
+                   {loader?<LoaderIcon className='animate-spin'/>:'Create an Account'} </Button></Link>
                    
                 <p>Already have an account  
                     <Link href={'/sign-in'} className='text-green-500'>
