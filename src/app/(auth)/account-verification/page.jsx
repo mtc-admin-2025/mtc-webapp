@@ -12,9 +12,6 @@ function AccountVerification() {
         <CheckCircle2 className='h-24 w-24 text-primary' />
         <h2 className='font-medium text-3xl text-primary'>Account Created Successfully</h2>
         <h2>Complete the verification by clicking on the link sent to your provided email address</h2>
-       <Link href={'/sign-in'}> 
-       <Button className="mt-8">Go to Log In</Button>
-          </Link>
     </div>
     </div>
   )

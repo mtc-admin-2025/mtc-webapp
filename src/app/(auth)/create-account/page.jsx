@@ -35,7 +35,7 @@ function CreateAccount() {
         const jwt=sessionStorage.getItem('jwt');
         if(jwt)
         {
-            router.push('/sign-in')
+            router.push('/')
         }
     },[router])
     const onCreateAccount=()=>{
@@ -70,21 +70,11 @@ function CreateAccount() {
                 <Input className='h-10 rounded-lg text-gray-950 mr-5'type="password" id="passwordField" placeholder="enter password" onChange={(e) => setPassword(e.target.value)} />
                 <Button className='bg-primary rounded-md w-20'ref={showPasswordBtnRef} onClick={togglePasswordVisibility} disabled={!(password)}>Show</Button></div>
                 
-                <div className="flex justify-center items-center min-h-screen">
-                  <Link href={'/account-verification'}>
-                      <Button
-                          onClick={() => onCreateAccount()}
-                          disabled={!(username || email || password)}
-                          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
-                      >
-                          {loader ? (
-                              <LoaderIcon className="animate-spin" />
-                          ) : (
-                              'Create an Account'
-                          )}
-                      </Button>
-                  </Link>
-              </div>
+                <Link href={'/account-verification'}><Button className ="items-center justify-center"onClick={()=>onCreateAccount()}
+                    disabled={!(username||email||password)}
+                >
+                   {loader?<LoaderIcon className='animate-spin'/>:'Create an Account'} </Button></Link>
+                   
                 <p>Already have an account  
                     <Link href={'/sign-in'} className='text-green-500'>
                           Click here to Sign In
