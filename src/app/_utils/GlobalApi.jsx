@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 
 const axiosClient=axios.create({
-    baseURL:'https://typical-bell-38b79c7d7d.strapiapp.com/api'
+    baseURL:'https://peaceful-connection-5961e0bd31.strapiapp.com/api'
 })
 
 const getCategory=()=>axiosClient.get('/categories?populate=*');
