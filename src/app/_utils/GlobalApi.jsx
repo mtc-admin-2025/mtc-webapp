@@ -4,8 +4,6 @@ const axiosClient=axios.create({
     baseURL:'https://peaceful-connection-5961e0bd31.strapiapp.com/api'
 })
 
-const getCategory=()=>axiosClient.get('/categories?populate=*');
-
 const getSliders=()=>axiosClient.get('/sliders?populate=*').then(resp=>{
     return resp.data.data
 });
