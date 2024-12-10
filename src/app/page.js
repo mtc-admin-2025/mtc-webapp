@@ -22,8 +22,6 @@ export default async function Home() {
      <BrandList brandList={brandList}/>
      
      <Slider sliderList={sliderList}/>
-     
-     
 
      <PopularList popularList={productList} />
 
