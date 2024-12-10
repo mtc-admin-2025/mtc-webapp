@@ -319,7 +319,6 @@ const updateOrderFields = (orderId, orderFields, jwt) => {
 };
 
 const GlobalApi = {
-    getCategory,
     getSliders,
     getBrandList,
     getAllProducts,

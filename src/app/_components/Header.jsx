@@ -55,16 +55,11 @@ function Header() {
         }
     }, [user, jwt]);
 
-    const getCategoryList = useCallback(() => {
-        GlobalApi.getCategory().then(resp => {
-            setCategoryList(resp.data.data);
-        });
-    }, []);
+
 
     useEffect(() => {
-        getCategoryList();
         getCartItems();
-    }, [getCartItems, getCategoryList]);
+    }, [getCartItems]);
 
     useEffect(() => {
         getCartItems();
