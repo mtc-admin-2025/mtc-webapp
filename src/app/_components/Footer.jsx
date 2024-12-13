@@ -57,7 +57,7 @@ function Footer() {
     Contact Us
     </p>
     <p className="mx-auto max-w-md text-center leading-relaxed text-gray-500">
-    09123456789  |  09987654321  |  0912348765
+    09123456789  |  09987654321  |  0912348764
     </p>
     <p className="mx-auto max-w-md text-center leading-relaxed text-gray-500">
     rscbusiness@gmail.com
