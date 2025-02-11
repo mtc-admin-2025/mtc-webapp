@@ -1,198 +1,68 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import GlobalApi from '@/app/_utils/GlobalApi';
+import Link from 'next/link';
+import CourseList from "../_components/CourseList";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
+import { useEffect, useState } from "react";
 
-function AdminDashboard() {
-    const [orders, setOrders] = useState([]); // State for storing orders
-    const [loading, setLoading] = useState(true); // Loading state
-    const [filteredOrders, setFilteredOrders] = useState([]); // State for filtered orders
-    const [filterDateRange, setFilterDateRange] = useState(''); // Date range filter
-    const [startDate, setStartDate] = useState(''); // Start date for specific range
-    const [endDate, setEndDate] = useState(''); // End date for specific range
-    const [totalAmount, setTotalAmount] = useState(0); // Total amount of filtered orders
+export default function Home() {
+  const [courseList, setCourseList] = useState([]);
 
-    // Fetch all orders with "Completed" status on component mount
-    useEffect(() => {
-        GlobalApi.getAllOrders()
-            .then(fetchedOrders => {
-                // Filter orders to only include completed ones
-                const completedOrders = fetchedOrders.filter(order => order.attributes.status === 'Completed');
-                setOrders(completedOrders); // Set orders in state
-                setFilteredOrders(sortOrders(completedOrders)); // Initially, show all completed orders sorted by date
-                calculateTotal(completedOrders); // Calculate total for all completed orders
-                setLoading(false); // Stop loading
-            })
-            .catch(error => {
-                console.error("Error loading orders:", error);
-                setLoading(false);
-            });
-    }, []);
-
-    // Sort orders by the latest date first (descending)
-    const sortOrders = (ordersList) => {
-        return ordersList.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const courses = await GlobalApi.getCourses();
+        setCourseList(courses);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
     };
 
-    // Filter orders by predefined date ranges (Daily, Weekly, Monthly, Yearly)
-    const handleFilterDateRangeChange = (event) => {
-        const selectedRange = event.target.value;
-        setFilterDateRange(selectedRange);
+    fetchCourses();
+  }, []); // Runs only once when component mounts
 
-        // Clear specific date range filter when selecting predefined ranges
-        setStartDate('');
-        setEndDate('');
-
-        const currentDate = new Date();
-        let startDate;
-
-        // Determine the start date based on the selected range
-        switch (selectedRange) {
-            case 'daily':
-                startDate = new Date(currentDate.setDate(currentDate.getDate() - 1));
-                break;
-            case 'weekly':
-                startDate = new Date(currentDate.setDate(currentDate.getDate() - 7));
-                break;
-            case 'monthly':
-                startDate = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-                break;
-            case 'yearly':
-                startDate = new Date(currentDate.setFullYear(currentDate.getFullYear() - 1));
-                break;
-            default:
-                startDate = null; // No filter
-                break;
-        }
-
-        let filtered = orders;
-
-        if (startDate) {
-            filtered = orders.filter(order => {
-                const orderDate = new Date(order.attributes.createdAt);
-                return orderDate >= startDate;
-            });
-        }
-
-        // Sort the filtered orders by the latest first
-        setFilteredOrders(sortOrders(filtered));
-        calculateTotal(filtered);
-    };
-
-    // Filter orders by specific date range (Start Date and End Date)
-    const handleCustomDateRangeFilter = () => {
-        let filtered = orders;
-
-        // Only filter if both start and end dates are provided
-        if (startDate && endDate) {
-            filtered = orders.filter(order => {
-                const orderDate = new Date(order.attributes.createdAt);
-                return orderDate >= new Date(startDate) && orderDate <= new Date(endDate);
-            });
-        }
-
-        // Sort the filtered orders by the latest first
-        setFilteredOrders(sortOrders(filtered));
-        calculateTotal(filtered);
-        setFilterDateRange('');
-    };
-
-    // Calculate the total order amount
-    const calculateTotal = (ordersList) => {
-        const total = ordersList.reduce((sum, order) => {
-            return sum + (order.attributes.totalOrderAmount || 0);
-        }, 0);
-        setTotalAmount(total);
-    };
-
-    return (
-        <div className="p-10 ml-56 mr-56">
-            <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-            <p className="mb-6">View all completed orders below:</p>
-
-            {/* Date Range Filter */}
-            <div className="mb-4">
-                <label htmlFor="filterDateRange" className="mr-2 font-semibold">Filter by Date Range:</label>
-                <select
-                    id="filterDateRange"
-                    value={filterDateRange}
-                    onChange={handleFilterDateRangeChange}
-                    className="border border-gray-300 rounded px-2 py-1"
-                >
-                    <option value="">All Time</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-            </div>
-
-            {/* Custom Date Range Filter */}
-            <div className="mb-4">
-                <label htmlFor="startDate" className="mr-2 font-semibold ">Start Date:</label>
-                <input
-                    type="date"
-                    id="startDate"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1"
-                />
-                <label htmlFor="endDate" className="mr-2 font-semibold ml-10">End Date:</label>
-                <input
-                    type="date"
-                    id="endDate"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1"
-                />
-                <button
-                onClick={handleCustomDateRangeFilter}
-                className="bg-primary text-white px-4 py-2 rounded ml-10"
-            >
-                Apply Custom Date Filter
-            </button>
-            </div>
-
-            {loading ? (
-                <p>Loading orders...</p>
-            ) : (
-                <div>
-                    {filteredOrders.length === 0 ? (
-                        <p>No orders found.</p>
-                    ) : (
-                        <>
-                            <table className="table-auto border-collapse border border-gray-300 w-full mb-4">
-                                <thead>
-                                    <tr>
-                                        <th className="border border-gray-300 px-4 py-2">Order ID</th>
-                                        <th className="border border-gray-300 px-4 py-2">Customer</th>
-                                        <th className="border border-gray-300 px-4 py-2">Total Amount</th>
-                                        <th className="border border-gray-300 px-4 py-2">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredOrders.map(order => (
-                                        <tr key={order.id}>
-                                            <td className="border border-gray-300 px-4 py-2">{order.attributes.paymentId.substring(0, 8)}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{order.attributes.username || "N/A"}</td>
-                                            <td className="border border-gray-300 px-4 py-2">₱{order.attributes.totalOrderAmount || "0.00"}</td>
-                                            <td className="border border-gray-300 px-4 py-2">
-                                                {new Date(order.attributes.createdAt).toLocaleDateString()}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-
-                            {/* Total Amount */}
-                            <div className="font-bold text-2xl text-green-800">
-                                Total Sales Amount: ₱{totalAmount.toFixed(2)}
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
+      
+      {/* Logo & Title */}
+      <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-20'>
+        <Link href={'/'} className="flex items-center gap-4">
+          <Image 
+            src='/mtclogowhite.gif' 
+            alt='logo' 
+            width={100} 
+            height={50} 
+            className='cursor-pointer w-full max-w-[50px] sm:max-w-[100px]'
+          />
+          <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white text-center sm:text-left">
+            MECHATRONICS TECHNOLOGIES CORPORATION
+          </p>
+        </Link>
+      </div>
+  
+      {/* Main Section: Text on Left, Hexagon Image on Right */}
+      <div className="flex flex-col items-center sm:items-start text-center sm:text-left ml-20 mr-20 mb-5 mt-10">
+        <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-400">
+          Welcome Admin!
+        </p>
+      </div>
+      <div className="ml-20">
+        <TabGroup className="text-white font-semibold text-xl">
+      <TabList className='bg-slate-400 w-60 rounded-lg'>
+        <Tab className='mr-3 hover:bg-blue-500 rounded-lg px-2'>Tab 1</Tab>
+        <Tab className='mr-2 hover:bg-blue-500 rounded-lg px-2'>Tab 2</Tab>
+        <Tab className='mr-2 hover:bg-blue-500 rounded-lg px-2'>Tab 3</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel>Content 1</TabPanel>
+        <TabPanel>Content 2</TabPanel>
+        <TabPanel>Content 3</TabPanel>
+      </TabPanels>
+    </TabGroup>
+       </div>
+    </div>
+  );
+  
 }
-
-export default AdminDashboard;

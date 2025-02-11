@@ -1,8 +1,8 @@
 "use client";
 import { Button } from '@/components/ui/button';
-import { CircleUserRound, ShoppingCart } from 'lucide-react';
+import { CircleUserRound } from 'lucide-react';
 import Image from 'next/image';
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,32 +11,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import GlobalApi from '../_utils/GlobalApi';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UpdateCartContext } from '../_context/UpdateCartContext';
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
-import CartItemList from './CartItemList';
-import { toast } from 'sonner';
 
 function Header() {
-    const [categoryList, setCategoryList] = useState([]);
     const [isLogin, setIsLogin] = useState(false);
     const [user, setUser] = useState(null);
     const [jwt, setJwt] = useState(null);
-    const [totalCartItem, setTotalCartItem] = useState(0);
-    const { updateCart, setUpdateCart } = useContext(UpdateCartContext);
-    const [cartItemList, setCartItemList] = useState([]);
     const router = useRouter();
-    const [subtotal, setSubTotal] = useState(0);
 
     useEffect(() => {
         setIsLogin(sessionStorage.getItem('jwt') ? true : false);
@@ -44,172 +26,74 @@ function Header() {
         setJwt(sessionStorage.getItem('jwt'));
     }, []);
 
-    const getCartItems = useCallback(async () => {
-        if (user) {
-            const cartItemList_ = await GlobalApi.getCartItems(user.id, jwt);
-            setTotalCartItem(cartItemList_?.length);
-            setCartItemList(cartItemList_);
-            calculateSubtotal(cartItemList_); 
-        } else {
-            console.log("User is not logged in.");
-        }
-    }, [user, jwt]);
-
-
-
-    useEffect(() => {
-        getCartItems();
-    }, [getCartItems]);
-
-    useEffect(() => {
-        getCartItems();
-    }, [getCartItems, updateCart]);
-
-    const calculateSubtotal = (items) => {
-        const total = items.reduce((acc, item) => acc + item.amount, 0);
-        setSubTotal(total.toFixed(2));
-    };
-
     const onSignOut = () => {
         sessionStorage.clear();
         router.push('/sign-in');
     };
 
-    const onDeleteItem = async (id) => {
-        await GlobalApi.deleteCartItem(id, jwt);
-        toast('Item removed!');
-        setUpdateCart(prev => !prev); 
-    };
-
-    const onClearCart = async () => {
-        const success = await GlobalApi.clearCart(user.id, jwt);
-        if (success) {
-            toast('Cart cleared!');
-            setUpdateCart(prev => !prev); 
-        } else {
-            toast.error('Failed to clear the cart');
-        }
-    };
-    const onUpdateQuantity = async (id, newQuantity) => {
-        const itemToUpdate = cartItemList.find(item => item.id === id);
-    
-        if (itemToUpdate) {
-            const previousAmount = itemToUpdate.amount;
-            const previousQuantity = itemToUpdate.quantity;
-    
-            if (previousQuantity > 0) {
-                const answer = previousAmount / previousQuantity;
-                const newAmount = answer * newQuantity;
-    
-                const success = await GlobalApi.updateCartItemQuantity(id, newQuantity, jwt, newAmount);
-                if (success) {
-                    toast('Quantity updated!');
-                    setUpdateCart(prev => !prev);  // Trigger a cart update
-                } else {
-                    toast.error('Failed to update quantity');
-                }
-            } else {
-                toast.error('Invalid quantity data');
-            }
-        }
-    };
-
     return (
-        <div className='bg-green-500'>
+        <div className=''>
             <div className='shadow-sm flex justify-between container mx-auto px-0'>
                 <div className='flex items-center gap-8'>
-                <Link 
-                    href={'/'} 
-                    onClick={(e) => {
-                        if (user?.username.toLowerCase().includes("delivery") || user.username.toLowerCase() === "admin") {
-                            e.preventDefault(); 
-                        }
-                    }}
-                >
-                    <Image 
-                        src='/4.png' 
-                        alt='logo' 
-                        width={200} 
-                        height={150} 
-                        className='cursor-pointer' 
-                    />
-                </Link>
-                {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
-                    <h2 className='text-2xl font-bold text-yellow-200'>RHODESIAN ONLINE</h2>
-                )}
+                    <Link 
+                        href={'/'} 
+                        onClick={(e) => {
+                            if (user?.username.toLowerCase().includes("delivery") || user.username.toLowerCase() === "admin") {
+                                e.preventDefault(); 
+                            }
+                        }}
+                    >
+                        <Image 
+                            src='/mtclogo.png' 
+                            alt='logo' 
+                            width={200} 
+                            height={150} 
+                            className='cursor-pointer' 
+                        />
+                    </Link>
+                    {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
+                        <h2 className='text-2xl font-bold text-yellow-200'>RHODESIAN ONLINE</h2>
+                    )}
                 </div>
                 <div className='flex gap-5 items-center'>
-                {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
-                        <Sheet>
-                            <SheetTrigger>
-                                <h2 className='flex gap-2 items-center text-lg'>
-                                    <ShoppingCart className='h-10 w-10 text-white' />
-                                    <span className='bg-white text-primary text-xl px-2 rounded-full'>{totalCartItem}</span>
-                                </h2>
-                            </SheetTrigger>
-                            <SheetContent style={{ width: '1000px', maxWidth: '1000px' }}>
-                                <SheetHeader>
-                                    <SheetTitle className="bg-primary text-white font-bold text-xl p-2">My Cart</SheetTitle>
-                                    <SheetDescription>
-                                        <CartItemList cartItemList={cartItemList} onDeleteItem={onDeleteItem} onClearCart={onClearCart} onUpdateQuantity={onUpdateQuantity}/>
-                                    </SheetDescription>
-                                </SheetHeader>
-                                <SheetClose asChild>
-                                    <div className='absolute w-[96%] bottom-6 flex flex-col'>
-                                        <h2 className='text-lg font-bold flex justify-between'>Subtotal
-                                            <span>₱{subtotal}</span></h2>
-                                        <Button className="text-lg font-bold "
-                                            disabled={cartItemList.length === 0}
-                                            onClick={() => router.push(jwt ? '/checkout' : '/sign-in')}>
-                                            Checkout
-                                        </Button>
-                                    </div>
-                                </SheetClose>
-                            </SheetContent>
-                        </Sheet>
-                    )}
                     {!isLogin ? (
                         <Link href={'/sign-in'}>
                             <Button>Login</Button>
                         </Link>
                     ) : (
                         <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <div className="flex flex-col items-center">
-                                <CircleUserRound
-                                    className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
-                                />
-                                <span className="text-white text-xl mr-3">{user?.username}</span> {/* Display the username */}
-                            </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            
-                            {/* Conditionally render Dashboard link if username is "admin" */}
-                            {user?.username === "admin" && (
-                                <Link href={'/admin-dashboard'}>
-                                    <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                            <DropdownMenuTrigger asChild>
+                                <div className="flex flex-col items-center">
+                                    <CircleUserRound
+                                        className="bg-green-100 p-2 mr-3 rounded-full cursor-pointer text-primary h-16 w-16"
+                                    />
+                                    <span className="text-white text-xl mr-3">{user?.username}</span>
+                                </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {user?.username === "admin" && (
+                                    <Link href={'/admin-dashboard'}>
+                                        <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                                    </Link>
+                                )}
+                                <Link href={'/my-profile'}>
+                                    <DropdownMenuItem>Profile</DropdownMenuItem>
                                 </Link>
-                            )}
-                    
-                            <Link href={'/my-profile'}>
-                                <DropdownMenuItem>Profile</DropdownMenuItem>
-                            </Link>
-                            {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
-                            <Link href={'/my-order'}>
-                                <DropdownMenuItem>My Order</DropdownMenuItem>
-                            </Link>
-                            )}
-                            {user?.username.toLowerCase().includes("delivery") && (
-                            <Link href={'/rider-page'}>
-                                <DropdownMenuItem>Orders</DropdownMenuItem>
-                            </Link>
-                            )}
-                            <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    
+                                {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
+                                    <Link href={'/my-order'}>
+                                        <DropdownMenuItem>My Order</DropdownMenuItem>
+                                    </Link>
+                                )}
+                                {user?.username.toLowerCase().includes("delivery") && (
+                                    <Link href={'/rider-page'}>
+                                        <DropdownMenuItem>Orders</DropdownMenuItem>
+                                    </Link>
+                                )}
+                                <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     )}
                 </div>
             </div>

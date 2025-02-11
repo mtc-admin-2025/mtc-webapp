@@ -60,7 +60,7 @@ function SignIn() {
                     router.push('/rider-page'); // Redirect to rider page
                 } else {
                     console.log("Redirecting to default page...");
-                    router.push('/'); // Redirect to default user landing page
+                    router.push('/student-dashboard'); // Redirect to default user landing page
                 }
     
                 setLoader(false);
@@ -72,15 +72,16 @@ function SignIn() {
             }
         );
     };
-
     return (
+        <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
         <div className='flex items-baseline justify-center my-20'>
-            <div className='flex flex-col items-center justify-center p-10 bg-slate-100 border border-gray-200'>
-                <Image src='/4.png' width={200} height={200} alt='logo' />
-                <h2 className='font-bold text-3xl'>Sign In to Account</h2>
-                <h2 className='text-gray-500'>Enter your account details to Sign In</h2>
+            <div className='flex flex-col items-center justify-center
+            p-10 bg-blue-300 rounded-lg bg-opacity-30'>
+                <Image src='/mtclogowhite.gif' width={200} height={200} alt='logo'/>
+                <h2 className='text-slate-200 text-3xl font-extrabold'>Sign In to Account</h2>
+                <h2 className='text-slate-400 text-xl font-bold ml-20 mr-20'>Enter your account details to Sign In</h2>
                 <div className='w-full flex flex-col gap-5 mt-7'>
-                    <Input 
+                <Input 
                         placeholder='enter email or username' 
                         onChange={(e) => setIdentifier(e.target.value)} 
                     />
@@ -92,30 +93,25 @@ function SignIn() {
                             placeholder="enter password" 
                             onChange={(e) => setPassword(e.target.value)} 
                         />
-                        <Button 
-                            className='bg-primary rounded-md w-20' 
-                            ref={showPasswordBtnRef} 
-                            onClick={togglePasswordVisibility} 
-                            disabled={!password}
-                        >
-                            Show
-                        </Button>
-                    </div>
-                    <Button 
+                    <Button className='bg-blue-900 rounded-md w-20 hover:bg-blue-700'ref={showPasswordBtnRef} onClick={togglePasswordVisibility} disabled={!(password)}>Show</Button></div>
+                    
+                    <Button className = 'bg-blue-900 rounded-md  hover:bg-blue-700'
                         onClick={onSignIn}
                         disabled={!(identifier && password)} // Update condition to check both fields
                     >
                         {loader ? <LoaderIcon className='animate-spin' /> : 'Sign In'}
                     </Button>
                     <p>Don&apos;t have an account?
-                        <Link href={'/create-account'} className='text-green-500'>
+                        <Link href={'/create-account'} className='text-blue-500'>
                             Click here to create a new account
                         </Link>
                     </p>
                 </div>
             </div>
         </div>
-    )
+        </div>
+      )
+
 }
 
 export default SignIn;

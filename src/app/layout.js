@@ -1,5 +1,5 @@
 "use client"
-import { Fredoka,Lato,Poppins,PT_Sans,Kanit} from "next/font/google";
+import { Fredoka,Lato,Poppins,PT_Sans,Kanit, Space_Grotesk} from "next/font/google";
 import "./globals.css";
 import Header from "./_components/Header";
 import { Toaster } from "@/components/ui/sonner";
@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { UpdateCartContext } from "./_context/UpdateCartContext";
 import { useState } from "react";
 
-const outfit = Kanit({ subsets: ["latin"], weight: ['400', '700'] });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"] });
 
 export default function RootLayout({ children }) {
   const params=usePathname();
@@ -15,9 +15,8 @@ export default function RootLayout({ children }) {
   const showHeader=params=='/sign-in'||params=='/create-account'?false:true;
   return (
     <html lang="en">
-      <body className={outfit.className}>
+      <body className={spaceGrotesk.className}>
       <UpdateCartContext.Provider value={{updateCart,setUpdateCart}}>
-        {showHeader&&<Header/>}
         {children}
         <Toaster />
         </UpdateCartContext.Provider>
