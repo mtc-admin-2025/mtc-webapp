@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { usePathname } from "next/navigation";
 import { UpdateCartContext } from "./_context/UpdateCartContext";
 import { useState } from "react";
+import { Analytics } from "@vercel/analytics/react"
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "700"] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
       <UpdateCartContext.Provider value={{updateCart,setUpdateCart}}>
         {children}
         <Toaster />
+        <Analytics />
         </UpdateCartContext.Provider>
         </body>
     </html>
