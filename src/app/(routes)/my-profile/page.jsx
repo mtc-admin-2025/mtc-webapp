@@ -52,7 +52,7 @@ export default function Profile() {
           <DropdownMenuContent>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {user?.username === "admin" && (
+            {user?.username === "Admin" && (
               <Link href={'/admin-dashboard'}>
                 <DropdownMenuItem>Dashboard</DropdownMenuItem>
               </Link>
