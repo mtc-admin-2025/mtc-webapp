@@ -20,11 +20,31 @@ const getCourses=()=>axiosClient.get('/courses?populate=*').then(resp=>{
     return resp.data.data
 });
 
+const getStudents=()=>axiosClient.get('/students?populate=*').then(resp=>{
+    return resp.data.data
+});
+
+const getUser = (jwt) => {
+    return axiosClient.get('/users/me', {
+        headers: {
+            Authorization: 'Bearer ' + jwt
+        }
+    }).then(resp => {
+        const user = resp.data;
+        return {
+            username: user.username,
+            email: user.email,
+            password: user.password,
+        };
+    });
+};
 
 const GlobalApi = {
     registerUser,
     SignIn,
     getCourses,
+    getStudents,
+    getUser,
 }
 
 export default GlobalApi;

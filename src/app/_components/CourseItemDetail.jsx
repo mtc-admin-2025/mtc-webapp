@@ -24,6 +24,20 @@ function CourseItemDetail({ course }) {
           <span className='font-bold'>Course ID:</span> {course.Course_ID}
         </h2>
       </div>
+       {/* Schedule Section */}
+       {course.Schedule && course.Schedule.length > 0 ? (
+            <div className="mt-4 text-white">
+              <h3 className="font-bold text-xl text-blue-400">Schedules:</h3>
+              {course.Schedule.map((sched, index) => (
+                <div key={index} className="border p-2 rounded-lg mt-2 bg-gray-800">
+                  <p><span className="font-semibold">Date:</span> {sched.Schedule_date}</p>
+                  <p><span className="font-semibold">Time:</span> {sched.Schedule_time}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-white mt-4">No schedule available</p>
+          )}
     </div>
   );
 }

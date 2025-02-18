@@ -83,11 +83,6 @@ export default function Home() {
                                 <Link href={'/my-profile'}>
                                     <DropdownMenuItem>Profile</DropdownMenuItem>
                                 </Link>
-                                {user?.username && !user.username.toLowerCase().includes("delivery") && user.username.toLowerCase() !== "admin" && (
-                                    <Link href={'/my-order'}>
-                                        <DropdownMenuItem>My Order</DropdownMenuItem>
-                                    </Link>
-                                )}
                                 {user?.username.toLowerCase().includes("delivery") && (
                                     <Link href={'/rider-page'}>
                                         <DropdownMenuItem>Orders</DropdownMenuItem>

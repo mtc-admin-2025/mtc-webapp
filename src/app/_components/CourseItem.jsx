@@ -35,7 +35,7 @@ const CourseItem = ({ course }) => {
 
           {/* Image Section */}
           <Image 
-            src={course.Image?.data?.[0]?.attributes?.url ? `${BASE_URL}${course.Image.data[0].attributes.url}` : '/mechabanner.jpg'}
+            src={course.Image?.data?.[0]?.attributes?.url ? `${BASE_URL}${course.Image.data[0].attributes.url}` : '/mechabanner.png'}
             width={1000}
             height={800}
             alt={course.Course_Name || 'Course Image'}
@@ -46,8 +46,9 @@ const CourseItem = ({ course }) => {
           <div className="text-left">
             <h2 className='font-bold text-3xl text-white'>{course.Course_Name}</h2> 
             <p className='text-lg font-semibold text-slate-300'>Trainer: {course.trainer?.Name || 'N/A'}</p> 
-            <h2 className='font-bold text-lg text-blue-400'>CourseID: {course.Course_ID}</h2>
+            <h2 className='font-bold text-lg text-blue-300'>Available Schedules: {course.Schedule.length}</h2>
           </div>
+          <p className='text-lg font-semibold text-blue-500'>See Details</p> 
         </div>
       </DialogTrigger>
 
@@ -60,6 +61,8 @@ const CourseItem = ({ course }) => {
         </DialogHeader>
       </DialogContent>
     </Dialog>
+
+    
   );
 }
 

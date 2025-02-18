@@ -9,7 +9,7 @@ const nextConfig = {
         pagesBufferLength: 2,
     },
     experimental: {
-        appDir: true,
+        appDir: false,
     }
 };
 

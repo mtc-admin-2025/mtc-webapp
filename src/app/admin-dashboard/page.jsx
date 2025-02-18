@@ -1,14 +1,40 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import GlobalApi from '@/app/_utils/GlobalApi';
-import Link from 'next/link';
-import CourseList from "../_components/CourseList";
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react'
+import GlobalApi from "@/app/_utils/GlobalApi";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from 'next/navigation';
+import { CircleUserRound } from 'lucide-react';
 
 export default function Home() {
+  const [isLogin, setIsLogin] = useState(false);
+  const [user, setUser] = useState(null);
+  const [jwt, setJwt] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+      setIsLogin(sessionStorage.getItem('jwt') ? true : false);
+      setUser(JSON.parse(sessionStorage.getItem('user')));
+      setJwt(sessionStorage.getItem('jwt'));
+  }, []);
+
+  const onSignOut = () => {
+      sessionStorage.clear();
+      router.push('/sign-in');
+  };
+
   const [courseList, setCourseList] = useState([]);
+  const [studentList, setStudentList] = useState([]);
+  const [activeTab, setActiveTab] = useState("Dashboard");
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -20,14 +46,23 @@ export default function Home() {
       }
     };
 
+    const fetchStudents = async () => {
+      try {
+        const students = await GlobalApi.getStudents();
+        setStudentList(students);
+      } catch (error) {
+        console.error("Error fetching students:", error);
+      }
+    };
+
     fetchCourses();
-  }, []); // Runs only once when component mounts
+    fetchStudents();
+  }, []);
 
   return (
     <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
-      
       {/* Logo & Title */}
-      <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-20'>
+      <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-24 justify-between'>
         <Link href={'/'} className="flex items-center gap-4">
           <Image 
             src='/mtclogowhite.gif' 
@@ -40,29 +75,57 @@ export default function Home() {
             MECHATRONICS TECHNOLOGIES CORPORATION
           </p>
         </Link>
+        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <div className="flex flex-col items-center">
+                                 <CircleUserRound className="bg-slate-200 p-2 mr-3 rounded-full cursor-pointer text-blue-900 h-16 w-16"/>
+                                  <span className="text-slate-200 text-xl font-bold mr-3">{user?.username}</span>
+                              </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {user?.username === "admin" && (
+                                    <Link href={'/admin-dashboard'}>
+                                        <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                                    </Link>
+                                )}
+                                <Link href={'/my-profile'}>
+                                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                                </Link>
+                                {user?.username.toLowerCase().includes("delivery") && (
+                                    <Link href={'/rider-page'}>
+                                        <DropdownMenuItem>Orders</DropdownMenuItem>
+                                    </Link>
+                                )}
+                                <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
       </div>
   
-      {/* Main Section: Text on Left, Hexagon Image on Right */}
-      <div className="flex flex-col items-center sm:items-start text-center sm:text-left ml-20 mr-20 mb-5 mt-10">
+
+      {/* Welcome Admin Message */}
+      <div className="ml-20 mt-5">
         <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-400">
           Welcome Admin!
         </p>
       </div>
-      <div className="ml-20">
-        <TabGroup className="text-white font-semibold text-xl">
-      <TabList className='bg-slate-400 w-60 rounded-lg'>
-        <Tab className='mr-3 hover:bg-blue-500 rounded-lg px-2'>Tab 1</Tab>
-        <Tab className='mr-2 hover:bg-blue-500 rounded-lg px-2'>Tab 2</Tab>
-        <Tab className='mr-2 hover:bg-blue-500 rounded-lg px-2'>Tab 3</Tab>
-      </TabList>
-      <TabPanels>
-        <TabPanel>Content 1</TabPanel>
-        <TabPanel>Content 2</TabPanel>
-        <TabPanel>Content 3</TabPanel>
-      </TabPanels>
-    </TabGroup>
-       </div>
+
+      {/* Bento Dashboard */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 ml-20 mr-20">
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+          <h2 className="text-xl font-bold">Total Courses</h2>
+          <p className="text-3xl font-extrabold text-blue-600">{courseList.length}</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+          <h2 className="text-xl font-bold">Assessments Today</h2>
+          <p className="text-3xl font-extrabold text-green-600">1</p>
+        </div>
+        <Link href="/students-info" className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200">
+    <h2 className="text-xl font-bold">Total Students</h2>
+    <p className="text-3xl font-extrabold text-red-600">{studentList.length}</p>
+  </Link>
+      </div>
     </div>
   );
-  
 }

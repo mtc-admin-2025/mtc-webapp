@@ -52,7 +52,7 @@ function SignIn() {
                 toast("Login Successfully");
     
                 // Check username and redirect accordingly
-                if (user.username === 'admin') {
+                if (user.username === 'Admin') {
                     console.log("Redirecting to admin dashboard...");
                     router.push('/admin-dashboard'); // Redirect to admin page
                 } else if (user.username.toLowerCase().includes('delivery')) {
