@@ -40,6 +40,7 @@ export default function Home() {
     };
 
     fetchStudents();
+    fetchCourses();
   }, []);
 
   const fetchCourses = async () => {
