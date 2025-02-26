@@ -74,7 +74,7 @@ export default function Home() {
     <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
       {/* Logo & Title */}
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-24 justify-between">
-        <Link href={"/"} className="flex items-center gap-4">
+        <Link href={"/admin-dashboard"} className="flex items-center gap-4">
           <Image
             src="/mtclogowhite.gif"
             alt="logo"

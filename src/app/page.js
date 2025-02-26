@@ -25,7 +25,7 @@ export default function Home() {
         {/* Left: Text & Button */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
           <p className="text-3xl sm:text-6xl md:text-7xl lg:text-9xl font-extrabold text-white">
-            Power Up Your Future with Us! 🚀
+            Power Up Your Future with Us! 
           </p>
           <p className="text-lg sm:text-2xl md:text-4xl font-extrabold text-white mt-2 sm:mt-4">
             Enroll Today & Master Mechatronics, Instrumentation, and Electrical Installation, and Maintenance!

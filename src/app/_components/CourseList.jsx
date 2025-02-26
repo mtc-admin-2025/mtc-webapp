@@ -25,32 +25,17 @@ function CourseList({ courseList }) {
 
   return (
     <div className="mx-auto px-4">
+      <p className="text-center mt-6 text-blue-300 font-bold text-6xl">Assessment</p>
       {currentCourses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-20 mt-6">
           {currentCourses.map((course, index) => (
             <CourseItem key={index} course={course} />
           ))}
         </div>
       ) : (
-        <p className="text-center mt-6 text-blue-400">No courses found.</p>
+        <p className="text-center mt-6 text-blue-500">No courses found.</p>
       )}
 
-      <div className="flex justify-between mt-4">
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          onClick={nextPage}
-          disabled={currentCourses.length < coursesPerPage}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import GlobalApi from '@/app/_utils/GlobalApi';
 import Link from 'next/link';
+import TrainingList from "../_components/TrainingList";
 import CourseList from "../_components/CourseList";
 import { useEffect, useState } from "react";
 import {
@@ -53,7 +54,7 @@ export default function Home() {
       
       {/* Logo & Title */}
       <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-24 justify-between'>
-        <Link href={'/'} className="flex items-center gap-4">
+        <Link href={'/student-dashboard'} className="flex items-center gap-4">
           <Image 
             src='/mtclogowhite.gif' 
             alt='logo' 
@@ -94,16 +95,13 @@ export default function Home() {
       </div>
   
       {/* Main Section: Text on Left, Hexagon Image on Right */}
-      <div className="flex flex-col items-center sm:items-start text-center sm:text-left ml-20 mr-20 mb-5 mt-10">
-        <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-400">
-          Power Up Your Future with Us! 🚀
-        </p>
-        <p className="text-lg sm:text-xl md:text-2xl font-extrabold text-slate-500 mt-2 sm:mt-4">
-          Enroll Today & Master Technology!
-        </p>
-      </div>
       <div className="mx-4 sm:mx-1 md:mx-20 lg:mx-20 xl:mx-20">
-        <CourseList courseList={courseList}/>
+      <div className="mb-16">
+        <CourseList courseList={courseList} />
+      </div>
+      <div className="mb-16">
+        <TrainingList courseList={courseList} />
+      </div>
       </div>
     </div>
   );

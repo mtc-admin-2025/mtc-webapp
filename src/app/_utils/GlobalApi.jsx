@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 
 const axiosClient=axios.create({
-    baseURL:'https://deserving-friendship-7abc601c03.strapiapp.com/api'
+    baseURL:'https://best-memory-ccc8028681.strapiapp.com/api'
 })
 
 const registerUser=(username,email,password)=>axiosClient.post('/auth/local/register',{
