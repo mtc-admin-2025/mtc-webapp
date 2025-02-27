@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 function TrainingDetail({ course }) {
   const [mounted, setMounted] = useState(false);
@@ -23,9 +24,10 @@ function TrainingDetail({ course }) {
       <h2 className="font-medium text-lg">
         <span className='font-bold'>Course ID:</span> {course.Course_ID}
       </h2>
+      <Link href={'/training-register'}>
       <Button className="rounded-lg w-32 sm:w-40 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-500 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
   Enroll Now
-</Button>
+</Button></Link>
 
     </div>
   
