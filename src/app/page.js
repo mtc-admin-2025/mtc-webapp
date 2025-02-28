@@ -7,7 +7,7 @@ export default function Home() {
     <div className="relative">
       {/* Notice Banner */}
       <div className="w-full bg-orange-600 text-white text-center text-sm sm:text-lg font-bold py-2">
-      We're building something great! This website is still in development, so changes and updates are ongoing. - Dev Team
+      We&apos;re building something great! This website is still in development, so changes and updates are ongoing. - Dev Team
       </div>
 
       {/* Main Content */}
