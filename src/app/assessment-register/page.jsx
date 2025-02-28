@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { CircleUserRound } from 'lucide-react';
+import { ArrowDown } from "lucide-react";
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
@@ -29,8 +30,13 @@ export default function Home() {
   const [birthdate, setBirthdate] = useState("");
   const [age, setAge] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedScholarship, setSelectedScholarship] = useState("");
+  const [selectedAssessment, setSelectedAssessment] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState("");
+  const [workRows, setWorkRow] = useState([{ id: 1 }]);
+  const [trainingRows, setTrainingRow] = useState([{ id: 1 }]);
+  const [licenseRows, setLicenseRow] = useState([{ id: 1 }]);
+  const [compeRows, setCompeRow] = useState([{ id: 1 }]);
+
 
   
 
@@ -129,6 +135,24 @@ export default function Home() {
     setSelectedCourse(course);
   };
 
+  
+
+  const addWorkRow = () => {
+    setWorkRow([...workRows, { id: workRows.length + 1 }]);
+  };
+
+  const addTrainingRow = () => {
+    setTrainingRow([...trainingRows, { id: trainingRows.length + 1 }]);
+  };
+
+  const addLicenseRow = () => {
+    setLicenseRow([...licenseRows, { id: licenseRows.length + 1 }]);
+  };
+
+  const addCompeRow = () => {
+    setCompeRow([...compeRows, { id: compeRows.length + 1 }]);
+  };
+
   return (
     <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
       <div className='flex flex-col sm:flex-row items-center gap-4 sm:gap-8 ml-20 mr-24 justify-between'>
@@ -174,13 +198,13 @@ export default function Home() {
 
       {/* Registration Form */}
       <div className="mt-10 mx-32 bg-gray-200 p-6 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold mb-2">Training Registration</h2>
+        <h2 className="text-3xl font-bold mb-2">Assessment Registration</h2>
         <h2 className="text-lg font-bold mb-4 ml-1 text-gray-600">Please fill up the corresponding fields.</h2>
 
         <form onSubmit={handleRegister}>
 
         <div>
-            <label className="block text-lg font-semibold">Course for Training</label>
+            <label className="block text-lg font-semibold">Course for Assessment</label>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
               {courses.map((course, index) => (
                 <button
@@ -198,23 +222,25 @@ export default function Home() {
           </div>
           <div className="mb-5 w-60">
           <label className="block text-sm font-semibold mt-4">
-            Training Type
+            Client Type
           </label>
           <select
-            className="w-full p-3 border rounded-md"
-            value={selectedScholarship}
-            onChange={(e) => setSelectedScholarship(e.target.value)}
+            className="w-full p-3 border rounded "
+            value={selectedAssessment}
+            onChange={(e) => setSelectedAssessment(e.target.value)}
           >
-            <option value="">Select Training Type</option>
-            <option value="Paid Training">Paid Training</option>
-            <option value="TWSP">TWSP Scholarship</option>
-            <option value="PESFA">PESFA Scholarship</option>
-            <option value="STEP">STEP Scholarship</option>
-            <option value="others">Others</option>
+            <option value="">Select Client Type</option>
+            <option value="TVET Graduating Student">TVET Graduating Student</option>
+            <option value="TVET Graduate">TVET Graduate </option>
+            <option value="Industry Worker">Industry Worker </option>
+            <option value="K-12">K-12 </option>
+            <option value="OFW">OFW</option>
           </select>
           </div>
-    
 
+          <div className="border-4 border-blue-400 rounded-lg">
+          <div className="mx-5 my-3">
+          <h2 className="text-xl font-bold mb-2">Profile</h2>
           <label className="block text-sm font-semibold">Name</label>
           <div className="flex gap-2 mb-5">
             <div className="flex-[1.5]">
@@ -333,13 +359,111 @@ export default function Home() {
               />
             </div>
 
+            <div className="flex-[0.2]">
+              <label className="block text-sm font-semibold">Civil Status</label>
+              <select className="w-full p-2 rounded-md">
+                <option value="" disabled selected hidden>Select Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Widow/er">Widow/er</option>
+                <option value="Separated">Separated</option>
+              </select>
+            </div>
+
             {/* Birthplace */}
-            <div className="flex-auto">
+            <div className="flex-[0.5]">
               <label className="block text-sm font-semibold">Birthplace</label>
               <Input type="text" placeholder="Enter Birthplace"/>
             </div>
+            </div>
           </div>
-          
+          </div>
+
+          <div className="border-4 border-gray-400 rounded-lg mt-4">
+            <div className="mx-5 my-3">
+              <h2 className="text-xl font-bold">Work Experience (National Qualification-related)</h2>
+              {workRows.map((workRows) => (
+                <div key={workRows.id} className="border rounded-md flex flex-wrap gap-4">
+                  <Input type="text" placeholder="Name of Company" className="w-[600px]" />
+                  <Input type="text" placeholder="Position" className="w-[200px]" />
+                  <Input type="date" placeholder="Inclusive Dates(Start)" className="w-[150px]" />
+                  <Input type="date" placeholder="Inclusive Dates(End)" className="w-[150px]" />
+                  <Input type="number" placeholder="₱ Monthly Salary" className="w-[250px]" min="0" step="0.01"/>
+                  <select className="flex-1 min-w-[250px] rounded-lg">
+                    <option value="" disabled selected hidden>Select Status of Appointment</option>
+                    <option value="permanent">Permanent</option>
+                    <option value="temporary">Temporary</option>
+                    <option value="provisional">Provisional</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <Input type="number" placeholder="No. of Yrs. Working Exp." className="w-[250px]" />
+                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addWorkRow}>
+                    <ArrowDown className="mr-2" /> Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+
+          <div className="border-4 border-gray-400 rounded-lg mt-4">
+            <div className="mx-5 my-3">
+              <h2 className="text-xl font-bold">Other Training/Seminars Attended (National Qualification-related)</h2>
+              {trainingRows.map((trainingRows) => (
+                <div key={trainingRows.id} className="border rounded-md flex flex-wrap gap-4">
+                  <Input type="text" placeholder="Title" className="w-[600px]" />
+                  <Input type="text" placeholder="Venue" className="w-[440px]" />
+                  <Input type="date" placeholder="Inclusive Dates(Start)" className="w-[170px]" />
+                  <Input type="date" placeholder="Inclusive Dates(End)" className="w-[170px]" />
+                  <Input type="number" placeholder="No. of Hours" className="w-[250px]" min="0" step="0.01"/>
+                  <Input type="text" placeholder="Conducted By" className="w-[250px]" />
+                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addTrainingRow}>
+                    <ArrowDown className="mr-2" /> Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-4 border-gray-400 rounded-lg mt-4">
+            <div className="mx-5 my-3">
+              <h2 className="text-xl font-bold">Licensure Examination/s Passed</h2>
+              {licenseRows.map((licenseRows) => (
+                <div key={licenseRows.id} className="border rounded-md flex flex-wrap gap-4">
+                  <Input type="text" placeholder="Title" className="w-[600px]" />
+                  <Input type="number" placeholder="Years Taken" className="w-[200px]" />
+                  <Input type="text" placeholder="Examination Venue" className="w-[480px]" />
+                  <Input type="text" placeholder="Rating" className="w-[200px]" />
+                  <Input type="text" placeholder="Remarks" className="w-[200px]" />
+                  <Input type="date" placeholder="Expiry Date" className="w-[200px]" />
+                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addLicenseRow}>
+                    <ArrowDown className="mr-2" /> Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-4 border-gray-400 rounded-lg mt-4">
+            <div className="mx-5 my-3">
+              <h2 className="text-xl font-bold">Competency Assessment/s Passed</h2>
+              {compeRows.map((compeRows) => (
+                <div key={compeRows.id} className="border rounded-md flex flex-wrap gap-4">
+                  <Input type="text" placeholder="Title" className="w-[600px]" />
+                  <Input type="number" placeholder="Qualification Level" className="w-[200px]" />
+                  <Input type="text" placeholder="Industry Sector" className="w-[420px]" />
+                  <Input type="text" placeholder="Certificate Number" className="w-[260px]" />
+                  <Input type="date" placeholder="Date of Issuance" className="w-[200px]" />
+                  <Input type="date" placeholder="Expiration Date" className="w-[200px]" />
+                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addCompeRow}>
+                    <ArrowDown className="mr-2" /> Add
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+
           <div className="mt-10">
             <p className="text-lg font-semibold">Privacy Consent and Disclaimer</p>
 
@@ -378,9 +502,9 @@ export default function Home() {
                 className="mr-2"
               />
               <label htmlFor="agree" className="mr-4">Agree</label>
+              
             </div>
           </div>
-
         </form>
       </div>
     </div>
