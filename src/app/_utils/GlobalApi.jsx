@@ -39,12 +39,23 @@ const getUser = (jwt) => {
     });
 };
 
+const createStudent = (studentData, jwt) => {
+    return axiosClient.post('/students', {
+        data: studentData 
+    }, {
+        headers: {
+            Authorization: `Bearer ${jwt}`
+        }
+    });
+};
+
 const GlobalApi = {
     registerUser,
     SignIn,
     getCourses,
     getStudents,
     getUser,
+    createStudent,
 }
 
 export default GlobalApi;

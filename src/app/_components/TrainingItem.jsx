@@ -24,6 +24,26 @@ const CourseItem = ({ course }) => {
     return null;
   }
 
+  // Define images based on keywords in course names
+  const courseImageMap = [
+    { keyword: "Electrical", image: "/eimtraining.jpg" },
+    { keyword: "Instrumentation", image: "/ictraining.webp" },
+    { keyword: "Mechatronics", image: "/mstraining.webp" },
+    { keyword: "Solar", image: "/solartraining.jpg" },
+  ];
+
+  // Function to find an image based on course name
+  const getDefaultImage = (courseName) => {
+    if (!courseName) return "/default-course.jpg";
+    const matched = courseImageMap.find(item => courseName.toLowerCase().includes(item.keyword.toLowerCase()));
+    return matched ? matched.image : "/default-course.jpg";
+  };
+
+  // Assign course image dynamically
+  const courseImage = course.Image?.data?.[0]?.attributes?.url 
+    ? `${BASE_URL}${course.Image.data[0].attributes.url}` 
+    : getDefaultImage(course.Course_Name);
+
   return (
     <Dialog>
       <DialogTrigger className="w-full">
@@ -34,7 +54,7 @@ const CourseItem = ({ course }) => {
 
   {/* Image Section */}
   <Image
-    src={course.Image?.data?.[0]?.attributes?.url ? `${BASE_URL}${course.Image.data[0].attributes.url}` : '/coursebanner.png'}
+    src={courseImage}
     width={300}
     height={200}
     alt={course.Course_Name || 'Course Image'}
@@ -61,8 +81,6 @@ const CourseItem = ({ course }) => {
         </DialogHeader>
       </DialogContent>
     </Dialog>
-
-    
   );
 }
 

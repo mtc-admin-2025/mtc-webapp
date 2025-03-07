@@ -36,6 +36,8 @@ export default function Home() {
   const [trainingRows, setTrainingRow] = useState([{ id: 1 }]);
   const [licenseRows, setLicenseRow] = useState([{ id: 1 }]);
   const [compeRows, setCompeRow] = useState([{ id: 1 }]);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
 
 
   
@@ -45,6 +47,18 @@ export default function Home() {
       setUser(JSON.parse(sessionStorage.getItem('user')));
       setJwt(sessionStorage.getItem('jwt'));
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username); // 
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      setEmail(user.email); 
+    }
+  }, [user]);
 
   const onSignOut = () => {
       sessionStorage.clear();
@@ -225,7 +239,7 @@ export default function Home() {
             Client Type
           </label>
           <select
-            className="w-full p-3 border rounded "
+            className="w-full p-3 border rounded-lg "
             value={selectedAssessment}
             onChange={(e) => setSelectedAssessment(e.target.value)}
           >
@@ -247,7 +261,13 @@ export default function Home() {
               <Input type="text" placeholder="Last Name" className="w-full" />
             </div>
             <div className="flex-[2]">
-              <Input type="text" placeholder="First Name" className="w-full" />
+              <Input 
+                type="text" 
+                placeholder="First Name" 
+                className="w-full" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)}
+              />
             </div>
             <div className="flex-[0.3]">
               <Input type="text" placeholder="Middle Initial" className="w-full" />
@@ -289,7 +309,13 @@ export default function Home() {
             {/* Email Address */}
             <div className="flex-[0.4]">
               <label className="block text-sm font-semibold">Email Address</label>
-              <Input type="email" placeholder="sample@email.com" className="w-full" />
+              <Input 
+                type="text" 
+                placeholder="Email" 
+                className="w-full" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+              />
             </div>
 
             {/* Sex */}

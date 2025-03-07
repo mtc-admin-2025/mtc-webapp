@@ -23,45 +23,66 @@ const CourseItem = ({ course }) => {
     return null;
   }
 
+  // Define image mapping based on course name (prioritizing WebP)
+  const courseImageMap = [
+    { keyword: "Electrical", image: "/eimassessment.jpg" },
+    { keyword: "Instrumentation", image: "/icassessment.jpg" },
+    { keyword: "Mechatronics", image: "/msassessment.jpg" },
+    { keyword: "Solar", image: "/solarassessment.jpg" },
+  ];
+
+  // Function to determine the appropriate image
+  const getDefaultImage = (courseName) => {
+    if (!courseName) return "/default-course.webp"; // Fallback WebP image
+    const matched = courseImageMap.find(item =>
+      courseName.toLowerCase().includes(item.keyword.toLowerCase())
+    );
+    return matched ? matched.image : "/default-course.webp";
+  };
+
+  // Select Strapi image if available, otherwise use mapped WebP image
+  const courseImage = course.Image?.data?.[0]?.attributes?.url
+    ? `${BASE_URL}${course.Image.data[0].attributes.url}`
+    : getDefaultImage(course.Course_Name);
+
   return (
     <Dialog>
       <DialogTrigger className="w-full">
         <div className="bg-opacity-50 bg-gray-700 relative p-4 md:p-6 flex flex-col gap-4 rounded-2xl shadow-xl hover:shadow-gray-600/50 transition-all ease-in-out cursor-pointer w-full h-[400px]">
   
-  {/* Card Glow Effect */}
-  <div className="absolute inset-0 rounded-2xl border border-opacity-20 border-gray-500"></div>
+          {/* Card Glow Effect */}
+          <div className="absolute inset-0 rounded-2xl border border-opacity-20 border-gray-500"></div>
 
-  {/* Image Section */}
-  <Image
-    src={course.Image?.data?.[0]?.attributes?.url ? `${BASE_URL}${course.Image.data[0].attributes.url}` : '/mechabanner.png'}
-    width={300}
-    height={200}
-    alt={course.Course_Name || 'Course Image'}
-    className="rounded-t-2xl w-full h-[200px] object-cover"
-  />
+          {/* Image Section */}
+          <Image
+            src={courseImage}
+            width={300}
+            height={200}
+            alt={course.Course_Name || 'Course Image'}
+            className="rounded-t-2xl w-full h-[200px] object-cover"
+            priority // Ensures faster loading
+            unoptimized={courseImage.includes(BASE_URL)} // Prevents Next.js from optimizing Strapi images
+          />
 
-  {/* Text Content */}
-  <div className="text-left flex-grow">
-    <h2 className="font-bold text-3xl text-white">{course.Course_Name}</h2>
-    <h2 className="font-bold text-lg text-blue-300">Available Schedule/s: {course.AssessmentSchedule.length}</h2>
-  </div>
+          {/* Text Content */}
+          <div className="text-left flex-grow">
+            <h2 className="font-bold text-3xl text-white">{course.Course_Name}</h2>
+            <h2 className="font-bold text-lg text-blue-300">Available Schedule/s: {course.AssessmentSchedule.length}</h2>
+          </div>
 
-  <p className="text-lg font-semibold text-blue-500 mt-auto">See Details</p>
-</div>
-
+          <p className="text-lg font-semibold text-blue-500 mt-auto">See Details</p>
+        </div>
       </DialogTrigger>
 
       {/* Dialog Content */}
       <DialogContent className="max-w-4xl w-full md:max-w-5xl lg:max-w-6xl h-auto p-6">
         <DialogHeader>
           <DialogDescription>
-            <CourseItemDetail course={course}/>
+            <CourseItemDetail course={course} />
           </DialogDescription>
         </DialogHeader>
       </DialogContent>
     </Dialog>
-
-    
   );
 }
 
