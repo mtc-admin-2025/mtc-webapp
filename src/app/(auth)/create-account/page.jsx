@@ -79,7 +79,8 @@ function CreateAccount() {
   
 
     return (
-        <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
+        <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10"
+        onKeyDown={(e) => e.key === "Enter" && username && password && email && onSignIn()}>  
             <div className='flex items-baseline justify-center my-20'>
                 <div className='flex flex-col items-center justify-center p-10 bg-blue-300 rounded-lg bg-opacity-30 ml-4 mr-4'>
                     <Image src='/mtclogowhite.gif' width={200} height={200} alt='logo' />
@@ -95,9 +96,11 @@ function CreateAccount() {
                             onChange={(e) => setEmail(e.target.value)}
                         />
                         <div className='flex'>
-                            <Input className='h-10 rounded-lg text-gray-950 mr-5' type="password"
-                                id="passwordField" placeholder="Enter password"
-                                value={password}
+                            <Input 
+                                className='h-10 rounded-lg text-gray-950 mr-5' 
+                                type="password" 
+                                id="passwordField" 
+                                placeholder="enter password" 
                                 onChange={(e) => setPassword(e.target.value)} 
                             />
                             <Button className='bg-blue-900 rounded-md hover:bg-blue-700'

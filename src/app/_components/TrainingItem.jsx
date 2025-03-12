@@ -44,6 +44,13 @@ const CourseItem = ({ course }) => {
     ? `${BASE_URL}${course.Image.data[0].attributes.url}` 
     : getDefaultImage(course.Course_Name);
 
+    const today = new Date();
+
+  // Filter training schedules to only include future or today's schedules
+  const upcomingSchedules = course.TrainingSchedule
+    ? course.TrainingSchedule.filter((sched) => new Date(sched.Schedule_date) >= today)
+    : [];
+
   return (
     <Dialog>
       <DialogTrigger className="w-full">
@@ -64,7 +71,12 @@ const CourseItem = ({ course }) => {
   {/* Text Content */}
   <div className="text-left flex-grow">
     <h2 className="font-bold text-3xl text-white">{course.Course_Name}</h2>
-    <h2 className="font-bold text-lg text-blue-300">Available Schedule/s: {course.TrainingSchedule.length}</h2>
+    <h2 className="font-bold text-lg text-blue-300">
+  {upcomingSchedules.length > 0 
+    ? `Available Schedule/s: ${upcomingSchedules.length}` 
+    : "No available schedules"}
+</h2>
+
   </div>
 
   <p className="text-lg font-semibold text-blue-500 mt-auto">See Details</p>
