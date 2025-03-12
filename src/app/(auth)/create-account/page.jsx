@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState, useRef } from 'react'
 import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid';
 
 function CreateAccount() {
     const [username, setUsername] = useState("");
@@ -15,7 +16,7 @@ function CreateAccount() {
     const [password, setPassword] = useState("");
     const router = useRouter();
     const [loader, setLoader] = useState(false);
-
+    const [uniqueID, setUniqueID] = useState(() => uuidv4());
     const showPasswordBtnRef = useRef(null);
 
     const togglePasswordVisibility = () => {
@@ -37,38 +38,43 @@ function CreateAccount() {
             router.push('/');
         }
     }, [router]);
-
+    
     const onCreateAccount = () => {
-      setLoader(true);
-  
-      GlobalApi.registerUser(username, email, password)
-          .then(resp => {
-              const user = resp.data.user;
-              const jwt = resp.data.jwt;
-  
-              sessionStorage.setItem('user', JSON.stringify(user));
-              sessionStorage.setItem('jwt', jwt);
-  
-        
-              const studentData = {
-                  Students_Name: user.username, 
-                  Email: user.email,          
-                  userID: user.id              
-              };
-  
-              return GlobalApi.createStudent(studentData, jwt);
-          })
-          .then(() => {
-              toast("Account Created Successfully");
-              router.push('/account-verification');
-          })
-          .catch(e => {
-              toast(e?.response?.data?.error?.message || "Error creating account");
-          })
-          .finally(() => {
-              setLoader(false);
-          });
-  };
+        setLoader(true);
+    
+        GlobalApi.registerUser(username, email, password)
+            .then(resp => {
+                const user = resp.data.user;
+                const jwt = resp.data.jwt;
+    
+                sessionStorage.setItem('user', JSON.stringify(user));
+                sessionStorage.setItem('jwt', jwt);
+    
+                
+                const uniqueLearnerID = uuidv4().replace(/-/g, "").substring(0, 16);
+
+    
+                const studentData = {
+                    Students_Name: user.username, 
+                    Email: user.email,          
+                    userID: user.id,
+                    Unique_Learners_Identifier: uniqueLearnerID 
+                };
+    
+                return GlobalApi.createStudent(studentData, jwt);
+            })
+            .then(() => {
+                toast("Account Created Successfully");
+                router.push('/account-verification');
+            })
+            .catch(e => {
+                toast(e?.response?.data?.error?.message || "Error creating account");
+            })
+            .finally(() => {
+                setLoader(false);
+            });
+    };
+    
   
   
 

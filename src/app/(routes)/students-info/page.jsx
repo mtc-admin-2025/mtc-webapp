@@ -23,6 +23,7 @@ export default function Home() {
   const [courseList, setCourseList] = useState([]);
   const [todayScheduleCount, setTodayScheduleCount] = useState(0);
   const router = useRouter();
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
     setIsLogin(sessionStorage.getItem("jwt") ? true : false);
@@ -126,7 +127,7 @@ export default function Home() {
       {/* Wrapper to position Cards (Left) and Table (Right) */}
       <div className="flex flex-row justify-between p-6 ml-20 mr-20 gap-10">
         {/* Dashboard Stats - Left Side */}
-        <div className="flex flex-col items-start gap-6 w-1/3">
+        <div className="flex flex-col items-start gap-6 w-1/6">
           {/* Total Courses */}
           <div className="bg-gray-400 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center w-full cursor-pointer hover:bg-blue-500">
             <h2 className="text-xl font-bold text-gray-600">Total Courses</h2>
@@ -156,8 +157,8 @@ export default function Home() {
         </div>
 
         {/* Students Table - Right Side */}
-        <div className="bg-gray-200 p-6 rounded-lg shadow-lg w-2/3">
-          <h2 className="text-2xl font-bold mb-4">Students List</h2>
+        <div className="bg-gray-200 p-6 rounded-lg shadow-lg w-5/6">
+        <h2 className="text-2xl font-bold mb-4">Students List</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full bg-blue-200 border border-gray-200">
               <thead>
@@ -172,10 +173,12 @@ export default function Home() {
               <tbody>
                 {studentList.length > 0 ? (
                   studentList.map((student) => (
-                    <tr key={student.id} className="text-center border-t">
-                      <td className="py-2 px-4 border">
-                        {student.Unique_Learners_Identifier}
-                      </td>
+                    <tr
+                      key={student.id}
+                      className="text-center border-t cursor-pointer hover:bg-blue-400"
+                      onClick={() => setSelectedStudent(student)}
+                    >
+                      <td className="py-2 px-4 border">{student.Unique_Learners_Identifier}</td>
                       <td className="py-2 px-4 border">{student.Students_Name}</td>
                       <td className="py-2 px-4 border">{student.Contact_Number}</td>
                       <td className="py-2 px-4 border">{student.Email}</td>
@@ -184,17 +187,56 @@ export default function Home() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="py-4 text-center text-gray-500">
-                      No students found.
-                    </td>
+                    <td colSpan="5" className="py-4 text-center text-gray-500">No students found.</td>
                   </tr>
                 )}
               </tbody>
             </table>
-            <p className="mt-5 text-center">Click to see more details</p>
           </div>
         </div>
       </div>
+      {selectedStudent && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
+    <div className="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full">
+      {/* Modal Header */}
+      <h2 className="text-3xl font-bold text-gray-700 mb-6 text-center">
+        Student Details
+      </h2>
+
+      {/* Student Information */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+        {/* Essential Fields */}
+        <div className="border-b pb-2">
+          <span className="block text-gray-600 font-semibold">Unique Learners Identifier</span>
+          <span className="text-gray-800">{selectedStudent.Unique_Learners_Identifier || "N/A"}</span>
+        </div>
+        <div className="border-b pb-2">
+          <span className="block text-gray-600 font-semibold">Name</span>
+          <span className="text-gray-800">{selectedStudent.Students_Name || "N/A"}</span>
+        </div>
+        <div className="border-b pb-2">
+          <span className="block text-gray-600 font-semibold">Contact Number</span>
+          <span className="text-gray-800">{selectedStudent.Contact_Number || "N/A"}</span>
+        </div>
+        <div className="border-b pb-2">
+          <span className="block text-gray-600 font-semibold">Email</span>
+          <span className="text-gray-800">{selectedStudent.Email || "N/A"}</span>
+        </div>
+        <div className="border-b pb-2 col-span-2">
+          <span className="block text-gray-600 font-semibold">Address</span>
+          <span className="text-gray-800">{selectedStudent.Address || "N/A"}</span>
+        </div>
+      </div>
+      {/* Close Button */}
+      <Button
+        className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-md transition"
+        onClick={() => setSelectedStudent(null)}
+      >
+        Close
+      </Button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
