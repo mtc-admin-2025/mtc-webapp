@@ -23,79 +23,82 @@ import {
   Search,
 } from "lucide-react";
 
-export default function Home() {
+export default function TrainingPage() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
   const [studentList, setStudentList] = useState([]);
   const [courseList, setCourseList] = useState([]);
-  const [todayAssessmentScheduleCount, setTodayAssessmentScheduleCount] = useState(0);
   const [todayTrainingScheduleCount, setTodayTrainingScheduleCount] = useState(0);
+  const [todayTrainingSchedules, setTodayTrainingSchedules] = useState([]);
   const router = useRouter();
-  const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
-    setIsLogin(sessionStorage.getItem("jwt") ? true : false);
+    setIsLogin(!!sessionStorage.getItem("jwt"));
     setUser(JSON.parse(sessionStorage.getItem("user")));
     setJwt(sessionStorage.getItem("jwt"));
-
-    const getTodayDate = () => {
-      return new Date().toLocaleDateString("en-CA"); // e.g., "2025-03-13"
-    };
-  
-    // ✅ Function to convert "Month DD, YYYY" → "YYYY-MM-DD"
-    const parseScheduleDate = (dateStr) => {
-      const parsedDate = new Date(dateStr);
-      if (!isNaN(parsedDate)) {
-        return parsedDate.toLocaleDateString("en-CA");
-      }
-  
-      // Manual conversion if parsing fails
-      const [month, day, year] = dateStr.split(" ");
-      const monthIndex = new Date(`${month} 1, 2000`).getMonth();
-      return new Date(year, monthIndex, parseInt(day)).toLocaleDateString("en-CA");
-    };
-
-    const fetchStudents = async () => {
-      try {
-        const students = await GlobalApi.getStudents();
-        console.log("Fetched Students:", students); // Debugging
-        setStudentList(students);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-      }
-    };
 
     fetchStudents();
     fetchCourses();
   }, []);
 
+  const getTodayDate = () => {
+    return new Date().toLocaleDateString("en-CA"); // e.g., "2025-03-13"
+  };
+
+  const parseScheduleDate = (dateStr) => {
+    const parsedDate = new Date(dateStr);
+    if (!isNaN(parsedDate)) {
+      return parsedDate.toLocaleDateString("en-CA");
+    }
+    
+    const [month, day, year] = dateStr.split(" ");
+    const monthIndex = new Date(`${month} 1, 2000`).getMonth();
+    return new Date(year, monthIndex, parseInt(day)).toLocaleDateString("en-CA");
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const students = await GlobalApi.getStudents();
+      setStudentList(students);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    }
+  };
 
   const fetchCourses = async () => {
     try {
       const courses = await GlobalApi.getCourses();
       setCourseList(courses);
-
+  
       const today = getTodayDate();
       let trainingCount = 0;
-      let assessmentCount = 0;
-
+      let todayTrainings = [];
+  
       courses.forEach((course) => {
         if (course.TrainingSchedule) {
-          trainingCount += course.TrainingSchedule.filter(
-            (schedule) => schedule.Schedule_date && parseScheduleDate(schedule.Schedule_date) === today
-          ).length;
-        }
+          const trainerName = course.trainer ? course.trainer.Name : "N/A"; // Extract trainer name
 
-        if (course.AssessmentSchedule) {
-          assessmentCount += course.AssessmentSchedule.filter(
+          const todaysTrainings = course.TrainingSchedule.filter(
             (schedule) => schedule.Schedule_date && parseScheduleDate(schedule.Schedule_date) === today
-          ).length;
+          );
+
+          trainingCount += todaysTrainings.length;
+
+          todaysTrainings.forEach((schedule) => {
+            todayTrainings.push({
+              Course_Name: course.Course_Name,
+              Type: "Training",
+              Schedule_date: schedule.Schedule_date,
+              Schedule_time: schedule.Schedule_time,
+              Trainer_Name: trainerName, // Attach trainer name
+            });
+          });
         }
       });
-
+  
       setTodayTrainingScheduleCount(trainingCount);
-      setTodayAssessmentScheduleCount(assessmentCount);
+      setTodayTrainingSchedules(todayTrainings);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
@@ -149,16 +152,15 @@ export default function Home() {
           <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </Link>
 
-        <Link href="/training-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-          <ClipboardPen className="h-11 w-11 ml-7 text-white" />
-          <h2 className="text-xl font-bold ml-7 text-white">Trainings</h2>
-          <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <Link href="/training-info" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
+          <ClipboardPen className="text-blue-950 h-11 w-11 ml-7" />
+          <h2 className="text-xl font-bold ml-7 text-blue-950">Trainings</h2>
         </Link>
 
-        <Link href="/students-info" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
-          <UserRoundSearch className="text-blue-950 h-11 w-11 ml-7" />
-          <h2 className="text-xl font-bold ml-7 text-blue-950">Students</h2>
-          <div className="absolute right-1 top-4 bottom-4 w-1 bg-blue-600 rounded"></div>
+        <Link href="/students-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+          <UserRoundSearch className="h-11 w-11 ml-7 text-white" />
+          <h2 className="text-xl font-bold ml-7 text-white">Students</h2>
+          <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
         </Link>
       </div>
 
@@ -228,84 +230,32 @@ export default function Home() {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-6 w-3/4">
-        <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
+      <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
         <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Assessments</h2>
-      {/* Students Table - Right Side */}
-      <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
-  <thead className="bg-blue-600 text-white">
-    <tr>
-      <th className="p-4 text-sm font-semibold">Unique Learners ID</th>
-      <th className="p-4 text-sm font-semibold">Name</th>
-      <th className="p-4 text-sm font-semibold">Contact Number</th>
-      <th className="p-4 text-sm font-semibold">Email</th>
-      <th className="p-4 text-sm font-semibold">Address</th>
-      <th className="p-4 text-sm font-semibold"></th>
-    </tr>
-  </thead>
-  <tbody>
-    {studentList.length > 0 ? (
-      studentList.map((student, index) => (
-        <tr key={index} className="border-t">
-          <td className="p-4">{student.Unique_Learners_Identifier}</td>
-          <td className="p-4">{student.Students_Name}</td>
-          <td className="p-4">{student.Contact_Number}</td>
-          <td className="p-4">{student.Email}</td>
-          <td className="p-4">{student.Address}</td>
-          <td className="p-4">
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={() => setSelectedStudent(student)}
-            >
-              View Details
-            </button>
-          </td>
-        </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan="6" className="p-4 text-center">No students found.</td>
-      </tr>
-    )}
-  </tbody>
-</table>
-</div>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Trainings</h2>
 
-{selectedStudent && (
-<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4">
-  <div className="bg-white p-8 rounded-xl shadow-lg max-w-2xl w-full">
-    <h2 className="text-3xl font-bold text-gray-700 mb-6 text-center">Student Details</h2>
-    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-      <div className="border-b pb-2">
-        <span className="block text-gray-600 font-semibold">Unique Learners Identifier</span>
-        <span className="text-gray-800">{selectedStudent.Unique_Learners_Identifier || "N/A"}</span>
-      </div>
-      <div className="border-b pb-2">
-        <span className="block text-gray-600 font-semibold">Name</span>
-        <span className="text-gray-800">{selectedStudent.Students_Name || "N/A"}</span>
-      </div>
-      <div className="border-b pb-2">
-        <span className="block text-gray-600 font-semibold">Contact Number</span>
-        <span className="text-gray-800">{selectedStudent.Contact_Number || "N/A"}</span>
-      </div>
-      <div className="border-b pb-2">
-        <span className="block text-gray-600 font-semibold">Email</span>
-        <span className="text-gray-800">{selectedStudent.Email || "N/A"}</span>
-      </div>
-      <div className="border-b pb-2 col-span-2">
-        <span className="block text-gray-600 font-semibold">Address</span>
-        <span className="text-gray-800">{selectedStudent.Address || "N/A"}</span>
+        <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
+          <thead className="bg-blue-600 text-white">
+            <tr>
+              <th className="p-4 text-sm font-semibold">Course Name</th>
+              <th className="p-4 text-sm font-semibold">Schedule Date</th>
+              <th className="p-4 text-sm font-semibold">Schedule Time</th>
+              <th className="p-4 text-sm font-semibold">Trainer Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {todayTrainingSchedules.map((schedule, index) => (
+              <tr key={index} className="border-t">
+                <td className="p-4">{schedule.Course_Name}</td>
+                <td className="p-4">{schedule.Schedule_date}</td>
+                <td className="p-4">{schedule.Schedule_time}</td>
+                <td className="p-4">{schedule.Trainer_Name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
-    <button
-      className="mt-6 w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-md transition"
-      onClick={() => setSelectedStudent(null)}
-    >
-      Close
-    </button>
   </div>
-</div>
-      )}</div>
-</div>
   );
 }
