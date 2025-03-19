@@ -75,4 +75,6 @@ const GlobalApi = {
     deleteCourse,
 }
 
+
+
 export default GlobalApi;

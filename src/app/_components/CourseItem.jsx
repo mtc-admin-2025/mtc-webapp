@@ -76,8 +76,8 @@ const CourseItem = ({ course }) => {
             <h2 className="font-bold text-3xl text-white">{course.Course_Name}</h2>
             <h2 className="font-bold text-lg text-blue-300">
   {upcomingSchedules.length > 0 
-    ? `Available Schedule/s: ${upcomingSchedules.length}` 
-    : "No available schedules"}
+    ? `Available Schedules: ${upcomingSchedules.length}` 
+    : "No available schedule"}
 </h2>
 
           </div>

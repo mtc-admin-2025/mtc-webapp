@@ -60,7 +60,6 @@ export default function Home() {
     fetchCourses();
   }, []); // Runs only once when component mounts
 
-
     return (
 <div className="min-h-screen flex bg-[url('/banner.png')] bg-cover bg-center w-full p-10">
       {/* Admin Sidebar */}
@@ -83,10 +82,10 @@ export default function Home() {
   
         {/* Navigation Links */}
         <div className="flex flex-col gap-6">
-          <Link href="/admin-dashboard" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
-            <ChartNoAxesCombined className="text-blue-950 h-11 w-11 ml-7" />
-            <h2 className="text-xl font-bold ml-7 text-blue-950">Dashboard</h2>
-            <div className="absolute right-1 top-4 bottom-4 w-1 bg-[#091d41] rounded"></div>
+        <Link href="/student-dashboard" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <ChartNoAxesCombined className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Dashboard</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
 
           <Link href="/assessment-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
@@ -94,26 +93,28 @@ export default function Home() {
             <h2 className="text-xl font-bold ml-7 text-white">Assessments</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-  
-          <Link href="/training-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-            <ClipboardPen className="h-11 w-11 ml-7 text-white" />
-            <h2 className="text-xl font-bold ml-7 text-white">Trainings</h2>
-            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+          <Link href="/training-page-list" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
+            <ClipboardPen className="text-blue-950 h-11 w-11 ml-7" />
+            <h2 className="text-xl font-bold ml-7 text-blue-950">Trainings</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-[#091d41] rounded"></div>
           </Link>
-  
+
+
           <Link href="/trainer-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <UsersRound className="h-11 w-11 ml-7 text-white" />
             <h2 className="text-xl font-bold ml-7 text-white">Trainers/Assessors</h2>
             {/* Blue line that appears on hover */}
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-  
+
           <Link href="/my-profile" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <UserRound className="h-11 w-11 ml-7 text-white" />
             <h2 className="text-xl font-bold ml-7 text-white">My Account</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-        </div>
+      </div>
+
         {/* Calendar Component */}
         <div className="bg-[#13346d] rounded-xl mt-3 p-6 text-white text-center font-bold w-[350px]">
             <h2 className="text-xl mb-4">
@@ -150,8 +151,8 @@ export default function Home() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
               <div className="flex flex-col items-center cursor-pointer ml-auto mr-8">
-  <CircleUserRound className="p-2 rounded-full text-white h-16 w-16" />
-  <span className="text-slate-200 text-xl font-bold mt-2">{user?.username}</span>
+  <CircleUserRound className="rounded-full text-white h-16 w-16" />
+  <span className="text-slate-200 text-xl font-bold">{user?.username}</span>
 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -167,6 +168,7 @@ export default function Home() {
   
           {/* Course & Training Lists */}
           <section className="space-y-16">
+          <TrainingList courseList={courseList} />
           </section>
         </main>
       </div>
