@@ -27,10 +27,11 @@ export default function TrainingPage() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
-  const [studentList, setStudentList] = useState([]);
-  const [courseList, setCourseList] = useState([]);
-  const [todayTrainingScheduleCount, setTodayTrainingScheduleCount] = useState(0);
-  const [todayTrainingSchedules, setTodayTrainingSchedules] = useState([]);
+  const [allTrainingSchedules, setAllTrainingSchedules] = useState([]);
+  const [filteredSchedules, setFilteredSchedules] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -38,71 +39,79 @@ export default function TrainingPage() {
     setUser(JSON.parse(sessionStorage.getItem("user")));
     setJwt(sessionStorage.getItem("jwt"));
 
-    fetchStudents();
     fetchCourses();
   }, []);
 
-  const getTodayDate = () => {
-    return new Date().toLocaleDateString("en-CA"); // e.g., "2025-03-13"
-  };
 
-  const parseScheduleDate = (dateStr) => {
-    const parsedDate = new Date(dateStr);
-    if (!isNaN(parsedDate)) {
-      return parsedDate.toLocaleDateString("en-CA");
-    }
-    
-    const [month, day, year] = dateStr.split(" ");
-    const monthIndex = new Date(`${month} 1, 2000`).getMonth();
-    return new Date(year, monthIndex, parseInt(day)).toLocaleDateString("en-CA");
-  };
+  useEffect(() => {
+    fetchTrainings();
+  }, []);
 
-  const fetchStudents = async () => {
-    try {
-      const students = await GlobalApi.getStudents();
-      setStudentList(students);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    }
-  };
+  useEffect(() => {
+    filterSchedules();
+  }, [startDate, endDate, selectedCourse, allTrainingSchedules]);
 
   const fetchCourses = async () => {
     try {
       const courses = await GlobalApi.getCourses();
-      setCourseList(courses);
-  
-      const today = getTodayDate();
-      let trainingCount = 0;
-      let todayTrainings = [];
-  
+      let allTrainings = [];
+
       courses.forEach((course) => {
         if (course.TrainingSchedule) {
-          const trainerName = course.trainer ? course.trainer.Name : "N/A"; // Extract trainer name
+          const trainerName = course.trainer ? course.trainer.Name : "N/A";
 
-          const todaysTrainings = course.TrainingSchedule.filter(
-            (schedule) => schedule.Schedule_date && parseScheduleDate(schedule.Schedule_date) === today
-          );
-
-          trainingCount += todaysTrainings.length;
-
-          todaysTrainings.forEach((schedule) => {
-            todayTrainings.push({
+          course.TrainingSchedule.forEach((schedule) => {
+            allTrainings.push({
               Course_Name: course.Course_Name,
               Type: "Training",
               Schedule_date: schedule.Schedule_date,
               Schedule_time: schedule.Schedule_time,
-              Trainer_Name: trainerName, // Attach trainer name
+              Trainer_Name: trainerName,
             });
           });
         }
       });
-  
-      setTodayTrainingScheduleCount(trainingCount);
-      setTodayTrainingSchedules(todayTrainings);
+
+      setAllTrainingSchedules(allTrainings);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
   };
+
+  const fetchTrainings = async () => {
+    try {
+      const trainings = await GlobalApi.getTrainings(); // Fetch training data
+      setAllTrainingSchedules(trainings);
+      setFilteredSchedules(trainings); // Show all by default
+    } catch (error) {
+      console.error("Error fetching trainings:", error);
+    }
+  };
+
+  const filterSchedules = () => {
+    let filtered = allTrainingSchedules;
+
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+
+      filtered = filtered.filter((schedule) => {
+        const scheduleDate = new Date(schedule.Schedule_date);
+        if (start && end) return scheduleDate >= start && scheduleDate <= end;
+        if (start) return scheduleDate.toDateString() === start.toDateString();
+        if (end) return scheduleDate.toDateString() === end.toDateString();
+        return true;
+      });
+    }
+
+    if (selectedCourse) {
+      filtered = filtered.filter((schedule) => schedule.Course_Name === selectedCourse);
+    }
+
+    setFilteredSchedules(filtered);
+  };
+
+  const uniqueCourses = [...new Set(allTrainingSchedules.map((schedule) => schedule.Course_Name))];
 
   const onSignOut = () => {
     sessionStorage.clear();
@@ -131,38 +140,38 @@ export default function TrainingPage() {
 
       {/* Admin Tools Section */}
       <div className="flex flex-col gap-6">
-        <p className="text-lg font-semibold text-slate-200 ml-2">Admin Tools</p>
+          <p className="text-lg font-semibold text-slate-200 ml-2">Admin Tools</p>
 
-        <Link href="/admin-dashboard" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-        <ChartNoAxesCombined className="h-11 w-11 ml-7 text-white" />
-        <h2 className="text-xl font-bold ml-7 text-white">Dashboard</h2>
-        {/* Blue line that appears on hover */}
-        <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      </Link>
+          <Link href="/admin-dashboard" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <ChartNoAxesCombined className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Dashboard</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </Link>
 
-      <Link href="/courses-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-          <BookCopy className="h-11 w-11 ml-7 text-white" />
-          <h2 className="text-xl font-bold ml-7 text-white">Courses</h2>
-          <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </Link>
+          <Link href="/courses-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <BookCopy className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Courses</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </Link>
 
-        <Link href="/assessment-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-          <ClipboardCheck className="h-11 w-11 ml-7 text-white" />
-          <h2 className="text-xl font-bold ml-7 text-white">Assessments</h2>
-          <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </Link>
+          <Link href="/assessment-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <ClipboardCheck className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Assessments</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </Link>
 
-        <Link href="/training-info" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
-          <ClipboardPen className="text-blue-950 h-11 w-11 ml-7" />
-          <h2 className="text-xl font-bold ml-7 text-blue-950">Trainings</h2>
-        </Link>
+          <Link href="/training-info" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
+            <ClipboardPen className="text-blue-950 h-11 w-11 ml-7" />
+            <h2 className="text-xl font-bold ml-7 text-blue-950">Trainings</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-blue-600 rounded"></div>
+          </Link>
 
-        <Link href="/students-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-          <UserRoundSearch className="h-11 w-11 ml-7 text-white" />
-          <h2 className="text-xl font-bold ml-7 text-white">Students</h2>
-          <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </Link>
-      </div>
+          <Link href="/students-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <UserRoundSearch className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Students</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </Link>
+        </div>
 
       {/* Calendar Component */}
       <div className="bg-[#4b82e0] rounded-xl mt-3 p-6 text-white text-center font-bold w-[350px]">
@@ -198,15 +207,6 @@ export default function TrainingPage() {
     <div className="ml-[420px] flex-1 p-10">
       {/* Admin Profile & Search Bar */}
       <div className="fixed right-4 flex items-center space-x-4 mr-5">
-        {/* Search Bar */}
-        <div className="relative mt-5">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-          <input 
-            type="text" 
-            placeholder="Search" 
-            className="px-10 py-2 w-96 border border-gray-100 shadow-lg rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-      </div>
 
         {/* Profile Icon */}
         <DropdownMenu>
@@ -230,21 +230,58 @@ export default function TrainingPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-6 w-3/4">
-      <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
+        <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
         <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Trainings</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Trainings</h2>
+{/* Date Filter */}
+<div className="flex items-center gap-4 mb-6">
+        <label className="text-lg font-semibold text-gray-700">Filter by Date:</label>
+        <input
+          type="date"
+          className="border border-gray-300 p-2 rounded-lg"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <span className="text-lg font-semibold text-gray-700">to</span>
+        <input
+          type="date"
+          className="border border-gray-300 p-2 rounded-lg"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
 
-        <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
-          <thead className="bg-blue-600 text-white">
-            <tr>
-              <th className="p-4 text-sm font-semibold">Course Name</th>
-              <th className="p-4 text-sm font-semibold">Schedule Date</th>
-              <th className="p-4 text-sm font-semibold">Schedule Time</th>
-              <th className="p-4 text-sm font-semibold">Trainer Name</th>
-            </tr>
-          </thead>
-          <tbody>
-            {todayTrainingSchedules.map((schedule, index) => (
+  {uniqueCourses
+    .sort((a, b) => a.localeCompare(b)) // Sort courses alphabetically
+    .map((course, index) => (
+      <button
+        key={index}
+        className={`px-5 py-2 rounded-lg font-semibold shadow-md transition-all duration-300 ease-in-out transform 
+          ${selectedCourse === course 
+            ? "bg-blue-600 text-white scale-105 shadow-lg"  // Active button style
+            : "bg-gray-300 text-gray-800 hover:bg-blue-500 hover:text-white hover:scale-105"
+          }`}
+        onClick={() => setSelectedCourse(selectedCourse === course ? "" : course)}
+      >
+        {course}
+      </button>
+    ))}
+</div>
+
+
+      {/* Trainings Table */}
+      <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
+        <thead className="bg-blue-600 text-white">
+          <tr>
+            <th className="p-4">Course Name</th>
+            <th className="p-4">Schedule Date</th>
+            <th className="p-4">Schedule Time</th>
+            <th className="p-4">Trainer Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredSchedules
+            .sort((a, b) => new Date(b.Schedule_date) - new Date(a.Schedule_date)) // Sort latest first
+            .map((schedule, index) => (
               <tr key={index} className="border-t">
                 <td className="p-4">{schedule.Course_Name}</td>
                 <td className="p-4">{schedule.Schedule_date}</td>
@@ -252,9 +289,9 @@ export default function TrainingPage() {
                 <td className="p-4">{schedule.Trainer_Name}</td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
+        </tbody>
+      </table>
+        </div>
     </div>
   </div>
   );

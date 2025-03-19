@@ -48,7 +48,22 @@ const createStudent = (studentData, jwt) => {
         }
     });
 };
+const createCourse = (courseData, jwt) => 
+    axiosClient.post('/courses', { data: courseData }, {
+        headers: { Authorization: `Bearer ${jwt}` }
+    }).then(resp => resp.data.data)
+    .catch(error => {
+        console.error("Error creating course:", error);
+        throw error;
+    });
+    
+const deleteCourse = (courseId, jwt) => {
+    return axiosClient.delete(`/courses/${courseId}`, {
+        headers: { Authorization: `Bearer ${jwt}` }
+    });
+};
 
+    
 const GlobalApi = {
     registerUser,
     SignIn,
@@ -56,6 +71,8 @@ const GlobalApi = {
     getStudents,
     getUser,
     createStudent,
+    createCourse,
+    deleteCourse,
 }
 
 export default GlobalApi;

@@ -23,14 +23,15 @@ import {
   Search,
 } from "lucide-react";
 
-export default function Home() {
+export default function AssessmentPage() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
-  const [studentList, setStudentList] = useState([]);
-  const [courseList, setCourseList] = useState([]);
-  const [todayAssessmentScheduleCount, setTodayAssessmentScheduleCount] = useState(0);
-  const [todayAssessmentSchedules, setTodayAssessmentSchedules] = useState([]);
+  const [allAssessmentSchedules, setAllAssessmentSchedules] = useState([]);
+  const [filteredSchedules, setFilteredSchedules] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -38,71 +39,79 @@ export default function Home() {
     setUser(JSON.parse(sessionStorage.getItem("user")));
     setJwt(sessionStorage.getItem("jwt"));
 
-    fetchStudents();
     fetchCourses();
   }, []);
 
-  const getTodayDate = () => {
-    return new Date().toLocaleDateString("en-CA"); // e.g., "2025-03-13"
-  };
 
-  const parseScheduleDate = (dateStr) => {
-    const parsedDate = new Date(dateStr);
-    if (!isNaN(parsedDate)) {
-      return parsedDate.toLocaleDateString("en-CA");
-    }
-    
-    const [month, day, year] = dateStr.split(" ");
-    const monthIndex = new Date(`${month} 1, 2000`).getMonth();
-    return new Date(year, monthIndex, parseInt(day)).toLocaleDateString("en-CA");
-  };
+  useEffect(() => {
+    fetchAssessments();
+  }, []);
 
-  const fetchStudents = async () => {
-    try {
-      const students = await GlobalApi.getStudents();
-      setStudentList(students);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-    }
-  };
+  useEffect(() => {
+    filterSchedules();
+  }, [startDate, endDate, selectedCourse, allAssessmentSchedules]);
 
   const fetchCourses = async () => {
     try {
       const courses = await GlobalApi.getCourses();
-      setCourseList(courses);
-  
-      const today = getTodayDate();
-      let assessmentCount = 0;
-      let todayAssessments = [];
-  
+      let allAssessments = [];
+
       courses.forEach((course) => {
         if (course.AssessmentSchedule) {
-          const assessorName = course.assessor ? course.assessor.Name : "N/A"; // Extract assessor name
+          const trainerName = course.trainer ? course.trainer.Name : "N/A";
 
-          const todaysAssessments = course.AssessmentSchedule.filter(
-            (schedule) => schedule.Schedule_date && parseScheduleDate(schedule.Schedule_date) === today
-          );
-
-          assessmentCount += todaysAssessments.length;
-
-          todaysAssessments.forEach((schedule) => {
-            todayAssessments.push({
+          course.AssessmentSchedule.forEach((schedule) => {
+            allAssessments.push({
               Course_Name: course.Course_Name,
               Type: "Assessment",
               Schedule_date: schedule.Schedule_date,
               Schedule_time: schedule.Schedule_time,
-              Assessor_Name: assessorName, // Attach assessor name
+              Trainer_Name: trainerName,
             });
           });
         }
       });
-  
-      setTodayAssessmentScheduleCount(assessmentCount);
-      setTodayAssessmentSchedules(todayAssessments);
+
+      setAllAssessmentSchedules(allAssessments);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
   };
+
+  const fetchAssessments = async () => {
+    try {
+      const Assessments = await GlobalApi.getAssessments(); // Fetch Assessment data
+      setAllAssessmentSchedules(Assessments);
+      setFilteredSchedules(Assessments); // Show all by default
+    } catch (error) {
+      console.error("Error fetching Assessments:", error);
+    }
+  };
+
+  const filterSchedules = () => {
+    let filtered = allAssessmentSchedules;
+
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+
+      filtered = filtered.filter((schedule) => {
+        const scheduleDate = new Date(schedule.Schedule_date);
+        if (start && end) return scheduleDate >= start && scheduleDate <= end;
+        if (start) return scheduleDate.toDateString() === start.toDateString();
+        if (end) return scheduleDate.toDateString() === end.toDateString();
+        return true;
+      });
+    }
+
+    if (selectedCourse) {
+      filtered = filtered.filter((schedule) => schedule.Course_Name === selectedCourse);
+    }
+
+    setFilteredSchedules(filtered);
+  };
+
+  const uniqueCourses = [...new Set(allAssessmentSchedules.map((schedule) => schedule.Course_Name))];
 
   const onSignOut = () => {
     sessionStorage.clear();
@@ -199,15 +208,7 @@ export default function Home() {
     <div className="ml-[420px] flex-1 p-10">
       {/* Admin Profile & Search Bar */}
       <div className="fixed right-4 flex items-center space-x-4 mr-5">
-        {/* Search Bar */}
-        <div className="relative mt-5">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-          <input 
-            type="text" 
-            placeholder="Search" 
-            className="px-10 py-2 w-96 border border-gray-100 shadow-lg rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-      </div>
+    
 
         {/* Profile Icon */}
         <DropdownMenu>
@@ -234,37 +235,66 @@ export default function Home() {
         <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
         <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
           <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Assessments</h2>
-      {/* Assessments Table - Right Side */}
-          <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
-            <thead className="bg-blue-600 text-white">
-              <tr>
-                <th className="p-4 text-sm font-semibold">Course Name</th>
-                <th className="p-4 text-sm font-semibold">Schedule Date</th>
-                <th className="p-4 text-sm font-semibold">Schedule Time</th>
-                <th className="p-4 text-sm font-semibold">Assessor Name</th>
+{/* Date Filter */}
+<div className="flex items-center gap-4 mb-6">
+        <label className="text-lg font-semibold text-gray-700">Filter by Date:</label>
+        <input
+          type="date"
+          className="border border-gray-300 p-2 rounded-lg"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <span className="text-lg font-semibold text-gray-700">to</span>
+        <input
+          type="date"
+          className="border border-gray-300 p-2 rounded-lg"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+
+  {uniqueCourses
+    .sort((a, b) => a.localeCompare(b)) // Sort courses alphabetically
+    .map((course, index) => (
+      <button
+        key={index}
+        className={`px-5 py-2 rounded-lg font-semibold shadow-md transition-all duration-300 ease-in-out transform 
+          ${selectedCourse === course 
+            ? "bg-blue-600 text-white scale-105 shadow-lg"  // Active button style
+            : "bg-gray-300 text-gray-800 hover:bg-blue-500 hover:text-white hover:scale-105"
+          }`}
+        onClick={() => setSelectedCourse(selectedCourse === course ? "" : course)}
+      >
+        {course}
+      </button>
+    ))}
+</div>
+
+
+      {/* Assessments Table */}
+      <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
+        <thead className="bg-blue-600 text-white">
+          <tr>
+            <th className="p-4">Course Name</th>
+            <th className="p-4">Schedule Date</th>
+            <th className="p-4">Schedule Time</th>
+            <th className="p-4">Trainer Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredSchedules
+            .sort((a, b) => new Date(b.Schedule_date) - new Date(a.Schedule_date)) // Sort latest first
+            .map((schedule, index) => (
+              <tr key={index} className="border-t">
+                <td className="p-4">{schedule.Course_Name}</td>
+                <td className="p-4">{schedule.Schedule_date}</td>
+                <td className="p-4">{schedule.Schedule_time}</td>
+                <td className="p-4">{schedule.Trainer_Name}</td>
               </tr>
-            </thead>
-            <tbody>
-              {todayAssessmentSchedules.length > 0 ? (
-                todayAssessmentSchedules.map((schedule, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="p-4">{schedule.Course_Name}</td>
-                    <td className="p-4">{schedule.Schedule_date}</td>
-                    <td className="p-4">{schedule.Schedule_time}</td>
-                    <td className="p-4">{schedule.Assessor_Name}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="p-4 text-center">No assessments scheduled for today.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            ))}
+        </tbody>
+      </table>
         </div>
     </div>
   </div>
-        
-    
   );
 }

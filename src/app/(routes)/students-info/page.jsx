@@ -33,6 +33,7 @@ export default function Home() {
   const [todayTrainingScheduleCount, setTodayTrainingScheduleCount] = useState(0);
   const router = useRouter();
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setIsLogin(sessionStorage.getItem("jwt") ? true : false);
@@ -106,6 +107,12 @@ export default function Home() {
     router.push("/sign-in");
   };
 
+  const filteredStudents = studentList.filter(student =>
+    student.Unique_Learners_Identifier.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.Students_Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.Email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
   return (
     <div className="min-h-screen bg-gray-100 flex">
     {/* Sidebar */}
@@ -196,15 +203,7 @@ export default function Home() {
     <div className="ml-[420px] flex-1 p-10">
       {/* Admin Profile & Search Bar */}
       <div className="fixed right-4 flex items-center space-x-4 mr-5">
-        {/* Search Bar */}
-        <div className="relative mt-5">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
-          <input 
-            type="text" 
-            placeholder="Search" 
-            className="px-10 py-2 w-96 border border-gray-100 shadow-lg rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-      </div>
+
 
         {/* Profile Icon */}
         <DropdownMenu>
@@ -230,45 +229,63 @@ export default function Home() {
       <div className="bg-white rounded-xl shadow-lg p-6 w-3/4">
         <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
         <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Assessments</h2>
-      {/* Students Table - Right Side */}
-      <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
-  <thead className="bg-blue-600 text-white">
-    <tr>
-      <th className="p-4 text-sm font-semibold">Unique Learners ID</th>
-      <th className="p-4 text-sm font-semibold">Name</th>
-      <th className="p-4 text-sm font-semibold">Contact Number</th>
-      <th className="p-4 text-sm font-semibold">Email</th>
-      <th className="p-4 text-sm font-semibold">Address</th>
-      <th className="p-4 text-sm font-semibold"></th>
-    </tr>
-  </thead>
-  <tbody>
-    {studentList.length > 0 ? (
-      studentList.map((student, index) => (
-        <tr key={index} className="border-t">
-          <td className="p-4">{student.Unique_Learners_Identifier}</td>
-          <td className="p-4">{student.Students_Name}</td>
-          <td className="p-4">{student.Contact_Number}</td>
-          <td className="p-4">{student.Email}</td>
-          <td className="p-4">{student.Address}</td>
-          <td className="p-4">
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              onClick={() => setSelectedStudent(student)}
-            >
-              View Details
-            </button>
-          </td>
-        </tr>
-      ))
-    ) : (
+           {/* Header Section with Manage Courses, Search Bar & Add Course Button */}
+  <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20 flex items-center justify-between">
+  Manage Students
+  <div className="flex items-center gap-x-2"> 
+    {/* 🔍 Search Bar */}
+    <div className="relative w-60 mt-3"> {/* ✅ Ensures correct positioning */}
+  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
+  <input
+    type="text"
+    placeholder="Search Student/s"
+    className="border border-gray-300 pl-10 p-1 text-sm h-10 rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+  />
+</div>
+  </div>
+</h2>
+
+
+  {/* 📋 Students Table */}
+  <table className="table-auto w-full text-left border-collapse rounded-lg overflow-hidden bg-gray-200">
+    <thead className="bg-blue-600 text-white">
       <tr>
-        <td colSpan="6" className="p-4 text-center">No students found.</td>
+        <th className="p-4 text-sm font-semibold">Unique Learners ID</th>
+        <th className="p-4 text-sm font-semibold">Name</th>
+        <th className="p-4 text-sm font-semibold">Contact Number</th>
+        <th className="p-4 text-sm font-semibold">Email</th>
+        <th className="p-4 text-sm font-semibold">Address</th>
+        <th className="p-4 text-sm font-semibold"></th>
       </tr>
-    )}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {filteredStudents.length > 0 ? (
+        filteredStudents.map((student, index) => (
+          <tr key={index} className="border-t">
+            <td className="p-4">{student.Unique_Learners_Identifier}</td>
+            <td className="p-4">{student.Students_Name}</td>
+            <td className="p-4">{student.Contact_Number}</td>
+            <td className="p-4">{student.Email}</td>
+            <td className="p-4">{student.Address}</td>
+            <td className="p-4">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={() => setSelectedStudent(student)}
+              >
+                View Details
+              </button>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan="6" className="p-4 text-center">No students found.</td>
+        </tr>
+      )}
+    </tbody>
+  </table>
 </div>
 
 {selectedStudent && (
