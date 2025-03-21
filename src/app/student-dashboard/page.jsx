@@ -33,11 +33,28 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
   const router = useRouter();
+  const [time, setTime] = useState("");
 
   useEffect(() => {
       setIsLogin(sessionStorage.getItem('jwt') ? true : false);
       setUser(JSON.parse(sessionStorage.getItem('user')));
       setJwt(sessionStorage.getItem('jwt'));
+  }, []);
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTime(new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }));
+    };
+
+    updateTime(); // Set initial time
+    const interval = setInterval(updateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   const onSignOut = () => {
@@ -83,7 +100,7 @@ export default function Home() {
   
         {/* Navigation Links */}
         <div className="flex flex-col gap-6">
-          <Link href="/admin-dashboard" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
+          <Link href="/student-dashboard" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
             <ChartNoAxesCombined className="text-blue-950 h-11 w-11 ml-7" />
             <h2 className="text-xl font-bold ml-7 text-blue-950">Dashboard</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-[#091d41] rounded"></div>
@@ -142,33 +159,60 @@ export default function Home() {
               ))}
             </div>
           </div>
+   {/* Current Time (Client-Side) */}
+<div className="text-lg text-center text-white font-bold">{time}</div>
         </div>
   
         {/* Main Content */}
         <main className="ml-[400px] ">
-          <div className="flex justify-between items-center mb-10">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-              <div className="flex flex-col items-center cursor-pointer ml-auto mr-8">
-  <CircleUserRound className="p-2 rounded-full text-white h-16 w-16" />
-  <span className="text-slate-200 text-xl font-bold mt-2">{user?.username}</span>
-</div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {user?.username === "admin" && <Link href="/admin-dashboard"><DropdownMenuItem>Dashboard</DropdownMenuItem></Link>}
-                <Link href="/my-profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>
-                {user?.username.toLowerCase().includes("delivery") && <Link href="/rider-page"><DropdownMenuItem>Orders</DropdownMenuItem></Link>}
-                <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-  
-          {/* Course & Training Lists */}
-          <section className="space-y-16">
-          </section>
-        </main>
+  <div className="flex justify-between items-center w-full px-8">
+    
+    {/* Other Left-Side Content (if any) */}
+    <div></div> 
+    
+    {/* Right-Side Content (User Profile Dropdown) */}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="flex flex-col items-center cursor-pointer ml-auto"> {/* <-- Added ml-auto */}
+          <CircleUserRound className="rounded-full text-white h-16 w-16" />
+          <span className="text-slate-200 text-xl font-bold">{user?.username}</span>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {user?.username === "admin" && (
+          <Link href="/admin-dashboard">
+            <DropdownMenuItem>Dashboard</DropdownMenuItem>
+          </Link>
+        )}
+        <Link href="/my-profile">
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+        </Link>
+        {user?.username.toLowerCase().includes("delivery") && (
+          <Link href="/rider-page">
+            <DropdownMenuItem>Orders</DropdownMenuItem>
+          </Link>
+        )}
+        <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+
+  {/* Course & Training Lists */}
+  <section className="space-y-16 ml-5">
+    <div>
+      <Image
+        src="/MTCCOVER.png"
+        alt="logo"
+        width={1200}
+        height={500}
+        className="cursor-pointer w-full max-w-[500px] sm:max-w-[1000px] rounded-lg mt-24"
+      />
+    </div>
+    <h1 className="text-white font-bold text-4xl">Enrolled Programs</h1>
+  </section>
+</main>
       </div>
     );
   }
