@@ -21,7 +21,7 @@
     "@strapi/plugin-email": "^4.25.12",
     "@strapi/provider-email-nodemailer": "^5.0.1",
     "@vercel/analytics": "^1.5.0",
-    "axios": "^1.7.4",
+    "axios": "^1.8.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.1.8",

@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 
 const axiosClient=axios.create({
-    baseURL:'https://whimsical-oasis-b2dd051418.strapiapp.com/api'
+    baseURL:'https://sparkling-nest-3874afd96c.strapiapp.com/api'
 })
 
 const registerUser=(username,email,password)=>axiosClient.post('/auth/local/register',{
@@ -80,6 +80,22 @@ const getEnrolledCourses = (userEmail, jwt) => {
     });
 };
 
+const updateUser = (jwt, username, email) => {
+    return axiosClient.put('/students', {
+        username: username,
+        email: email
+    }, {
+        headers: {
+            Authorization: `Bearer ${jwt}`
+        }
+    }).then(resp => {
+        return resp.data; // Return updated user data
+    }).catch(error => {
+        console.error("Error updating user:", error);
+        throw error;
+    });
+};
+
     
 const GlobalApi = {
     registerUser,
@@ -91,6 +107,7 @@ const GlobalApi = {
     createCourse,
     deleteCourse,
     getEnrolledCourses,
+    updateUser,
 }
 
 

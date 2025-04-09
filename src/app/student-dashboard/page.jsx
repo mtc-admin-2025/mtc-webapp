@@ -189,11 +189,6 @@ export default function Home() {
         <Link href="/my-profile">
           <DropdownMenuItem>Profile</DropdownMenuItem>
         </Link>
-        {user?.username.toLowerCase().includes("delivery") && (
-          <Link href="/rider-page">
-            <DropdownMenuItem>Orders</DropdownMenuItem>
-          </Link>
-        )}
         <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -45,7 +45,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username); // 
+      setUsername(user.username); 
     }
   }, [user]);
 
