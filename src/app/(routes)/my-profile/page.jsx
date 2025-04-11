@@ -14,12 +14,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { CircleUserRound, ClipboardCheck, ChartNoAxesCombined, ClipboardPen, UsersRound, UserRound } from 'lucide-react';
+import { toast } from 'sonner'; 
 
 export default function Profile() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
+  const [editedUser, setEditedUser] = useState({ username: "", email: "", password: "" }); // State to hold edited user data
   const router = useRouter();
 
   useEffect(() => {
@@ -55,6 +58,55 @@ export default function Profile() {
     return course ? course.image : "/default-image.jpg"; // Provide a default image if no match is found
   };
 
+  const handleManageProfileClick = () => {
+    setEditedUser({
+      username: user?.username || "",
+      email: user?.email || "",
+      password: "", // You can add password handling here
+    });
+    setIsModalOpen(true); // Open the modal when the button is clicked
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Close the modal
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedUser((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      // Ensure you're passing the correct user ID, updated data, and JWT
+      const updatedUserData = await GlobalApi.updateUser(user.id, editedUser, jwt);
+  
+      console.log("Updated User Data:", updatedUserData); // Log updated user
+  
+      // Optionally, update local state with the new user data
+      setUser(updatedUserData);
+  
+      // Store the updated user data in sessionStorage
+      sessionStorage.setItem('user', JSON.stringify(updatedUserData));
+  
+      // Close the modal
+      setIsModalOpen(false);
+  
+      // Use Sonner toast
+      toast.success("Profile updated successfully!");
+  
+    } catch (error) {
+      console.error("Error saving changes:", error);  // Log the error
+  
+      // Use Sonner toast for error handling
+      toast.error("Failed to save changes. Please try again.");
+    }
+  };
+  
+  
 
   return (
     <div className="min-h-screen flex bg-[url('/banner.png')] bg-cover bg-center w-full p-10">
@@ -72,32 +124,29 @@ export default function Profile() {
 
         {/* Navigation */}
         <div className="flex flex-col gap-6">
-        <Link href="/student-dashboard" className="p-6 rounded-lg flex items-center w-[350px] relative group">
-        <ChartNoAxesCombined className="h-11 w-11 ml-7 text-white" />
-        <h2 className="text-xl font-bold ml-7 text-white">Dashboard</h2>
-        {/* Blue line that appears on hover */}
-        <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      </Link>
+          <Link href="/student-dashboard" className="p-6 rounded-lg flex items-center w-[350px] relative group">
+            <ChartNoAxesCombined className="h-11 w-11 ml-7 text-white" />
+            <h2 className="text-xl font-bold ml-7 text-white">Dashboard</h2>
+            <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </Link>
 
+          {/* More Links */}
           <Link href="/assessment-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <ClipboardCheck className="h-11 w-11 ml-7 text-white" />
             <h2 className="text-xl font-bold ml-7 text-white">Assessments</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-  
           <Link href="/training-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <ClipboardPen className="h-11 w-11 ml-7 text-white" />
             <h2 className="text-xl font-bold ml-7 text-white">Trainings</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-  
           <Link href="/trainer-page-list" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <UsersRound className="h-11 w-11 ml-7 text-white" />
             <h2 className="text-xl font-bold ml-7 text-white">Trainers/Assessors</h2>
-            {/* Blue line that appears on hover */}
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </Link>
-  
+
           <Link href="/my-profile" className="bg-white p-6 rounded-lg flex items-center w-[350px] relative">
             <UserRound className="text-blue-950 h-11 w-11 ml-7" />
             <h2 className="text-xl font-bold ml-7 text-blue-950">My Account</h2>
@@ -105,38 +154,30 @@ export default function Profile() {
           </Link>
         </div>
 
-         {/* Calendar Component */}
-              <div className="bg-[#13346d] rounded-xl mt-3 p-6 text-white text-center font-bold w-[350px]">
-            <h2 className="text-xl mb-4">
-              {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-            </h2>
-  
-            {/* Weekdays */}
-            <div className="grid grid-cols-7 gap-2 text-xs">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="p-2">{day}</div>
-              ))}
-            </div>
-  
-            {/* Calendar Days */}
-            <div className="grid grid-cols-7 gap-2 mt-1">
-              {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay() }, (_, i) => (
-                <div key={i} className="p-2"></div> // Empty spaces
-              ))}
-              {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }, (_, i) => (
-                <div
-                  key={i}
-                  className={`p-2 rounded-full ${i + 1 === new Date().getDate() ? "bg-white text-[#13346d]" : ""}`}
-                >
-                  {i + 1}
-                </div>
-              ))}
-            </div>
+        {/* Calendar Component */}
+        <div className="bg-[#13346d] rounded-xl mt-3 p-6 text-white text-center font-bold w-[350px]">
+          <h2 className="text-xl mb-4">
+            {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          </h2>
+          {/* Weekdays */}
+          <div className="grid grid-cols-7 gap-2 text-xs">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div key={day} className="p-2">{day}</div>
+            ))}
           </div>
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-2 mt-1">
+            {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth(), 1).getDay() }, (_, i) => (
+              <div key={i} className="p-2"></div> // Empty spaces
+            ))}
+            {Array.from({ length: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() }, (_, i) => (
+              <div key={i} className={`p-2 rounded-full ${i + 1 === new Date().getDate() ? "bg-white text-[#13346d]" : ""}`}>
+                {i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-
-             
-        
 
       {/* Main Content */}
       <main className="ml-[420px] flex flex-col gap-8 w-4/5">
@@ -161,32 +202,75 @@ export default function Profile() {
         <div className="mt-5">
           <p className="text-6xl font-bold text-white text-center">{user?.username}&apos;s Profile</p>
         </div>
-        
+
         <div className="mt-5">
-  <h2 className="text-2xl font-bold text-white text-center">Enrolled Courses</h2>
-  {enrolledCourses.length > 0 ? (
-    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {enrolledCourses.map(course => (
-        <div 
-        key={course.id} 
-        className="bg-[#13346d] text-white rounded-lg shadow-lg overflow-hidden p-6"
-      >
-        {/* Display course image */}
-        <img 
-          src={getImageForCourse(course.Course_Name)} 
-          alt={course.Course_Name} 
-          className="w-full h-48 object-cover rounded-md mb-4" 
-        />
-      
-        <h3 className="text-xl font-bold">{course.Course_Name}</h3>
-        <p className="text-sm text-gray-300 mt-2">{course.Course_Description}</p>
-      </div>
-      ))}
-    </div>
+          <h2 className="text-2xl font-bold text-white text-center">Enrolled Courses</h2>
+          {enrolledCourses.length > 0 ? (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {enrolledCourses.map(course => (
+                <div 
+                  key={course.id} 
+                  className="bg-[#13346d] text-white rounded-lg shadow-lg overflow-hidden p-6"
+                >
+                  <img 
+                    src={getImageForCourse(course.Course_Name)} 
+                    alt={course.Course_Name} 
+                    className="w-full h-48 object-cover rounded-md mb-4" 
+                  />
+                  <h3 className="text-xl font-bold">{course.Course_Name}</h3>
+                  <p className="text-sm text-gray-300 mt-2">{course.Course_Description}</p>
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="text-lg text-white">No courses enrolled.</p>
           )}
         </div>
+
+        {/* Manage Profile Button */}
+        <div className="mt-6 text-center">
+          <Button 
+            className="rounded-lg w-48 sm:w-56 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-500 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500"
+            onClick={handleManageProfileClick}
+          >
+            Manage Profile
+          </Button>
+        </div>
+
+        {/* Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+              <h3 className="text-xl font-bold mb-4">Edit Profile</h3>
+              <div className="mb-4">
+                <label htmlFor="username" className="block font-bold">Username</label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={editedUser.username}
+                  onChange={handleInputChange}
+                  className="border p-2 w-full mt-1 rounded-md"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="email" className="block font-bold">Email</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={editedUser.email}
+                  onChange={handleInputChange}
+                  className="border p-2 w-full mt-1 rounded-md"
+                />
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleSaveChanges} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Save Changes</Button>
+                <Button onClick={handleCloseModal} className="bg-gray-500 text-white px-4 py-2 rounded-lg ml-3">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -80,21 +80,36 @@ const getEnrolledCourses = (userEmail, jwt) => {
     });
 };
 
-const updateUser = (jwt, username, email) => {
-    return axiosClient.put('/students', {
-        username: username,
-        email: email
-    }, {
-        headers: {
-            Authorization: `Bearer ${jwt}`
+const updateUser = (userId, updatedUser, jwt) => {
+    console.log("Updating user with ID:", userId);
+    console.log("Updated data:", updatedUser);
+
+    const data = {
+      username: updatedUser.username,
+      email: updatedUser.email,
+    };
+
+    return axiosClient
+      .put(
+        `/users/${userId}`,
+        data, // Directly send the data object without wrapping it in another "data" object
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
         }
-    }).then(resp => {
-        return resp.data; // Return updated user data
-    }).catch(error => {
-        console.error("Error updating user:", error);
+      )
+      .then((resp) => {
+        console.log("Response from Strapi:", resp.data);
+        return resp.data;
+      })
+      .catch((error) => {
+        console.error("Error updating user:", error.response?.data || error.message);
         throw error;
-    });
+      });
 };
+
+
 
     
 const GlobalApi = {

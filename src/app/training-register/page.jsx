@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { CircleUserRound } from 'lucide-react';
+import GlobalApi from "../_utils/GlobalApi";
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
@@ -23,9 +24,7 @@ export default function Home() {
   const [permanentAddress, setPermanentAddress] = useState("");
   const [currentAddress, setCurrentAddress] = useState("");
   const [permanentSuggestions, setPermanentSuggestions] = useState([]);
-  const [currentSuggestions, setCurrentSuggestions] = useState([]);
   const [isPermanentSuggestionsVisible, setIsPermanentSuggestionsVisible] = useState(false);
-  const [isCurrentSuggestionsVisible, setIsCurrentSuggestionsVisible] = useState(false);
   const [birthdate, setBirthdate] = useState("");
   const [age, setAge] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -33,27 +32,59 @@ export default function Home() {
   const [privacyConsent, setPrivacyConsent] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-
+  const [sex, setSex] = useState("");
+  const [employment, setEmployment] = useState("");
+  const [educational_attainment, setEducationalAttainment] = useState("");
+  const [birthplace, setBirthplace] = useState("");
+  const [contact_number, setContact] = useState("");
 
   
 
+
   useEffect(() => {
-      setIsLogin(sessionStorage.getItem('jwt') ? true : false);
-      setUser(JSON.parse(sessionStorage.getItem('user')));
-      setJwt(sessionStorage.getItem('jwt'));
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    const storedJwt = sessionStorage.getItem("jwt");
+  
+    if (storedJwt) {
+      setIsLogin(true);
+      setUser(storedUser);
+      setJwt(storedJwt);
+    }
+  
+    console.log("Stored user:", storedUser); // Add this for debugging
   }, []);
-
+  
+  
   useEffect(() => {
     if (user) {
-      setUsername(user.username); 
+      setUsername(user.username);
+      setEmail(user.email);
+      setPermanentAddress(user.address || ""); 
+      setBirthdate(user.birthdate || "");
+      setAge(user.age || "");
+      setSelectedCourse(user.selectedCourse || "");
+      setSelectedScholarship(user.selectedScholarship || "");
+      setSex(user.sex || "");
+      setEmployment(user.employment || "");
+      setEducationalAttainment(user.educational_attainment || "");
+      setBirthplace(user.birthplace || "");
+      setContact(user.contact_number ||"");
     }
   }, [user]);
-
+  
   useEffect(() => {
-    if (user) {
-      setEmail(user.email); 
+    if (birthdate) {
+      const birthDate = new Date(birthdate);
+      const currentDate = new Date();
+
+      const calculatedAge = currentDate.getFullYear() - birthDate.getFullYear();
+      const monthDifference = currentDate.getMonth() - birthDate.getMonth();
+      const dayDifference = currentDate.getDate() - birthDate.getDate();
+
+      const finalAge = monthDifference < 0 || (monthDifference === 0 && dayDifference < 0) ? calculatedAge - 1 : calculatedAge;
+      setAge(finalAge);
     }
-  }, [user]);
+  }, [birthdate]);
 
   const onSignOut = () => {
       sessionStorage.clear();
@@ -91,31 +122,6 @@ export default function Home() {
     setIsPermanentSuggestionsVisible(false);
   };
 
-  const handleCurrentAddressChange = async (e) => {
-    const query = e.target.value;
-    setCurrentAddress(query);
-    setIsCurrentSuggestionsVisible(true);
-
-    if (query.length < 3) {
-      setCurrentSuggestions([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&countrycodes=PH&q=${query}`
-      );
-      const results = await response.json();
-      setCurrentSuggestions(results.length ? results : []);
-    } catch (error) {
-      console.error("Error fetching current address suggestions:", error);
-    }
-  };
-
-  const handleCurrentAddressSelect = (selectedAddress) => {
-    setCurrentAddress(selectedAddress.display_name);
-    setIsCurrentSuggestionsVisible(false);
-  };
 
   const handleBirthdateChange = (e) => {
     const selectedDate = e.target.value;
@@ -253,32 +259,27 @@ export default function Home() {
           </div>
 
           <div className="relative mb-5">
-            <label className="block text-sm font-semibold">Permanent Address (for Mailing)</label>
-            <Input placeholder="Enter Permanent Address" value={permanentAddress} onChange={handlePermanentAddressChange} className="w-full" />
-            {isPermanentSuggestionsVisible && permanentSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
-                {permanentSuggestions.map((suggestion) => (
-                  <li key={suggestion.place_id} onClick={() => handlePermanentAddressSelect(suggestion)} className="p-2 cursor-pointer hover:bg-gray-100">
-                    {suggestion.display_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="relative mb-5">
-            <label className="block text-sm font-semibold">Current Address</label>
-            <Input placeholder="Enter Current Address" value={currentAddress} onChange={handleCurrentAddressChange} className="w-full" />
-            {isCurrentSuggestionsVisible && currentSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
-                {currentSuggestions.map((suggestion) => (
-                  <li key={suggestion.place_id} onClick={() => handleCurrentAddressSelect(suggestion)} className="p-2 cursor-pointer hover:bg-gray-100">
-                    {suggestion.display_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+  <label className="block text-sm font-semibold">Address</label>
+  <Input
+    placeholder="Enter Address"
+    value={permanentAddress}
+    onChange={handlePermanentAddressChange}
+    className="w-full"
+  />
+  {isPermanentSuggestionsVisible && permanentSuggestions.length > 0 && (
+    <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
+      {permanentSuggestions.map((suggestion) => (
+        <li
+          key={suggestion.place_id}
+          onClick={() => handlePermanentAddressSelect(suggestion)}
+          className="p-2 cursor-pointer hover:bg-gray-100"
+        >
+          {suggestion.display_name}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
           <div className="flex gap-2 mb-5">
             {/* Email Address */}
@@ -296,48 +297,63 @@ export default function Home() {
             {/* Sex */}
             <div className="flex-[0.2]">
               <label className="block text-sm font-semibold">Sex</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Sex</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              <select
+              className="w-full p-2 border rounded-md"
+              value={sex}
+              onChange={(e) => setSex(e.target.value)} // Update the state when the selection changes
+            >
+              <option value="" disabled hidden>Select Sex</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
             </div>
 
             {/* Employment (Before Training) */}
             <div className="flex-[0.3]">
               <label className="block text-sm font-semibold">Employment</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Employment</option>
-                <option value="Employed">Employed</option>
-                <option value="Unemployed">Unemployed</option>
-                <option value="Self-Employed">Self-Employed</option>
-                <option value="Student">Student</option>
-              </select>
+              <select
+  className="w-full p-2 border rounded-md"
+  value={employment}
+  onChange={(e) => setEmployment(e.target.value)}
+>
+  <option value="" disabled hidden>Select Employment</option>
+  <option value="Employed">Employed</option>
+  <option value="Unemployed">Unemployed</option>
+  <option value="Self-Employed">Self-Employed</option>
+  <option value="Student">Student</option>
+</select>
+
             </div>
 
             {/* Educational Attainment (Before Training) */}
             <div className="flex-[0.3]">
-              <label className="block text-sm font-semibold">Educational Attainment</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Educational Attainment</option>
-                <option value="No Grade Completed">No Grade Completed</option>
-                <option value="Elementary Undergraduate">Elementary Undergraduate</option>
-                <option value="Elementary Graduate">Elementary Graduate</option>
-                <option value="High School Undergraduate">High School Undergraduate</option>
-                <option value="High School Graduate">High School Graduate</option>
-                <option value="Junior High (K-12)">Junior High (K-12)</option>
-                <option value="Senior High (K-12)">Senior High (K-12)</option>
-                <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate">
-                  Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate
-                </option>
-                <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Graduate">
-                  Post-Secondary Non-Tertiary/Technical Vocational Course Graduate
-                </option>
-                <option value="College Undergraduate">College Undergraduate</option>
-                <option value="College Graduate">College Graduate</option>
-                <option value="Masteral">Masteral</option>
-                <option value="Doctorate">Doctorate</option>
-              </select>
+              <label className="block text-sm font-semibold"
+              value={educational_attainment}
+              onChange={(e) => setEducationalAttainment(e.target.value)}>Educational Attainment</label>
+               <select
+    className="w-full p-2 border rounded-md"
+    value={educational_attainment} // Binding to state value
+    onChange={(e) => setEducationalAttainment(e.target.value)} // Updating state on change
+  >
+    <option value="" disabled hidden>Select Educational Attainment</option>
+    <option value="No Grade Completed">No Grade Completed</option>
+    <option value="Elementary Undergraduate">Elementary Undergraduate</option>
+    <option value="Elementary Graduate">Elementary Graduate</option>
+    <option value="High School Undergraduate">High School Undergraduate</option>
+    <option value="High School Graduate">High School Graduate</option>
+    <option value="Junior High (K-12)">Junior High (K-12)</option>
+    <option value="Senior High (K-12)">Senior High (K-12)</option>
+    <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate">
+      Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate
+    </option>
+    <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Graduate">
+      Post-Secondary Non-Tertiary/Technical Vocational Course Graduate
+    </option>
+    <option value="College Undergraduate">College Undergraduate</option>
+    <option value="College Graduate">College Graduate</option>
+    <option value="Masteral">Masteral</option>
+    <option value="Doctorate">Doctorate</option>
+  </select>
             </div>
           </div>
 
@@ -362,9 +378,25 @@ export default function Home() {
 
             {/* Birthplace */}
             <div className="flex-auto">
-              <label className="block text-sm font-semibold">Birthplace</label>
-              <Input type="text" placeholder="Enter Birthplace"/>
-            </div>
+  <label className="block text-sm font-semibold">Birthplace</label>
+  <Input
+    type="text"
+    placeholder="Enter Birthplace"
+    value={birthplace}
+    onChange={(e) => setBirthplace(e.target.value)} // Ensure this is set to update state
+  />
+</div>
+
+            <div className="flex-[0.5]">
+  <label className="block text-sm font-semibold">Contact Number</label>
+  <Input 
+    type="text" 
+    placeholder="Enter Contact Number"
+    value={contact_number} // Binding the state value to the input
+    onChange={(e) => setContact(e.target.value)} // Handling the state update properly
+  />
+</div>
+
           </div>
           
           <div className="mt-10">
