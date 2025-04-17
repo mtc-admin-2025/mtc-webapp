@@ -51,6 +51,13 @@ const [signature, setSignature] = useState(null);
 const [courses, setCourses] = useState([]);  // State for courses
 const [selectedCourse, setSelectedCourse] = useState(""); // State for selected course
 
+
+const [assessmentSchedules, setAssessmentSchedules] = useState([]);
+const [selectedSchedule, setSelectedSchedule] = useState("");
+
+
+
+
 useEffect(() => {
   const fetchCourses = async () => {
     try {
@@ -142,6 +149,9 @@ useEffect(() => {
       employment,
       educational_attainment,
       age,
+      privacyConsent,
+      selectedCourse,
+      selectedSchedule,
     };
   
     // Check for blank fields safely
@@ -202,6 +212,8 @@ useEffect(() => {
       educational_attainment,
       age,
       privacyConsent,
+      selectedCourse,
+      selectedSchedule,
     };
   
     try {
@@ -264,10 +276,13 @@ useEffect(() => {
       setAge("");
     }
   };
-  const handleCourseSelect = (course) => {
-    console.log("Selected course:", course);
-    setSelectedCourse(course);
-  };
+
+const handleCourseSelect = (courseId) => {
+  const selected = courses.find(course => course.id === parseInt(courseId));
+  setSelectedCourse(courseId);
+  setAssessmentSchedules(selected?.AssessmentSchedule || []);
+};
+
 
   return (
     <div className="bg-[url('/banner.png')] bg-cover bg-center min-h-screen w-full p-4 sm:p-10">
@@ -315,50 +330,98 @@ useEffect(() => {
       {/* Registration Form */}
       <div className="mt-10 mx-32 bg-gray-200 p-6 rounded-lg shadow-lg">
         <h2 className="text-3xl font-bold mb-2">Assessment Registration</h2>
-        <h2 className="text-lg font-bold mb-4 ml-1 text-gray-600">Please fill up the corresponding fields.</h2>
+        <h2 className="text-lg font-bold mb-4 ml-1 text-gray-600">Please fill up the corresponding fields.<span className="text-lg font-normal mb-4 ml-1 text-blue-500">Update the fields if needed</span></h2>
 
         <form onSubmit={handleRegister}>
 
-          {/* Dropdown for selecting Course */}
-          <div className="mb-5 w-full">
+{/* Course Selection */}
+<div className="mb-5 w-full">
   <label className="block text-sm font-semibold mt-4">
     Select Qualification
   </label>
   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
-  {courses.map((course, index) => (
-    <button
-      key={index}
-      type="button" // Prevent accidental form submission
-      onClick={() => handleCourseSelect(course)}
-      className={`w-full p-3 border rounded-xl ${
-        selectedCourse === course ? 'bg-blue-700' : 'bg-blue-400'
-      } text-white hover:bg-blue-700 transition`}
-    >
-      {course.Course_Name} {/* Display the course name */}
-    </button>
-  ))}
+    {courses
+      .slice()
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .map((course, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={() => {
+            setSelectedCourse(course);
+            setAssessmentSchedules(course.AssessmentSchedule || []);
+            setSelectedSchedule(""); // Reset previous schedule
+          }}
+          className={`w-full p-3 border rounded-xl ${
+            selectedCourse?.id === course.id ? 'bg-blue-700' : 'bg-blue-400'
+          } text-white hover:bg-blue-700 transition`}
+        >
+          {course.Course_Name}
+        </button>
+      ))}
+  </div>
 </div>
-</div>
 
 
 
-          <div className="mb-5 w-60">
-          <label className="block text-sm font-semibold mt-4">
-            Assessment Type
-          </label>
-          <select
-            className="w-full p-3 border rounded-md"
-            value={selectedScholarship}
-            onChange={(e) => setSelectedScholarship(e.target.value)}
-          >
-            <option value="">Select Assessment Type</option>
-            <option value="Paid Assessment">Paid Assessment</option>
-            <option value="TWSP">TWSP Scholarship</option>
-            <option value="PESFA">PESFA Scholarship</option>
-            <option value="STEP">STEP Scholarship</option>
-            <option value="others">Others</option>
-          </select>
-          </div>
+{/* Assessment Type & Schedule Row */}
+{selectedCourse && assessmentSchedules.length > 0 && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+    
+    {/* Assessment Type */}
+    <div className="w-full">
+      <label className="block text-sm font-semibold mt-2">
+        Assessment Schedule
+      </label>
+      <select
+    value={selectedSchedule}
+    onChange={(e) => setSelectedSchedule(e.target.value)}
+    className="w-full p-3 border rounded-md"
+  >
+    {assessmentSchedules.filter((sched) => {
+      const [month, day, year] = sched.Schedule_date.trim().split('/');
+      const scheduleDate = new Date(`${year}-${month}-${day}`);
+      return scheduleDate >= new Date();
+    }).length > 0 ? (
+      <>
+        <option value="">Select Schedule</option>
+        {assessmentSchedules
+          .filter((sched) => {
+            const [month, day, year] = sched.Schedule_date.trim().split('/');
+            const scheduleDate = new Date(`${year}-${month}-${day}`);
+            return scheduleDate >= new Date();
+          })
+          .map((sched) => (
+            <option key={sched.id} value={sched.id}>
+              {sched.Schedule_date} | {sched.Schedule_time}
+            </option>
+          ))}
+      </>
+    ) : (
+      <option disabled>No schedule available</option>
+    )}
+  </select>
+    </div>
+
+    <div className="w-full">
+      <label className="block text-sm font-semibold mt-2">
+        Assessment Type
+      </label>
+      <select
+        className="w-full p-3 border rounded-md"
+        value={selectedScholarship}
+        onChange={(e) => setSelectedScholarship(e.target.value)}
+      >
+        <option value="">Select Assessment Type</option>
+        <option value="Paid Assessment">Paid Assessment</option>
+        <option value="TWSP">TWSP Scholarship</option>
+        <option value="PESFA">PESFA Scholarship</option>
+        <option value="STEP">STEP Scholarship</option>
+        <option value="others">Others</option>
+      </select>
+    </div>
+  </div>
+)}
     
           <div className="border-4 border-blue-400 rounded-lg">
           <div className="mx-5 my-3">

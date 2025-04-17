@@ -24,7 +24,7 @@ function TrainingList({ courseList }) {
   // Sort courses alphabetically
   const sortedCourses = courseList
     ?.slice()
-    .sort((a, b) => (a.Course_Name?.localeCompare(b.Course_Name) || 0));
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
   return (
     <div className="mx-auto px-4">
