@@ -232,7 +232,7 @@ export default function TrainingPage() {
       <div className="bg-white rounded-xl shadow-lg p-6 w-3/4">
         <h1 className="text-2xl font-semibold text-gray-800">Welcome Back,</h1>
         <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20">Manage Trainings</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-10">Manage Trainings</h2>
 {/* Date Filter */}
 <div className="flex items-center gap-4 mb-6">
         <label className="text-lg font-semibold text-gray-700">Filter by Date:</label>

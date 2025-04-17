@@ -15,51 +15,73 @@ import {
 import { useRouter } from 'next/navigation';
 import { CircleUserRound } from 'lucide-react';
 import GlobalApi from "../_utils/GlobalApi";
+import { toast } from 'sonner'; 
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
   const router = useRouter();
-  const [permanentAddress, setPermanentAddress] = useState("");
-  const [currentAddress, setCurrentAddress] = useState("");
-  const [permanentSuggestions, setPermanentSuggestions] = useState([]);
-  const [isPermanentSuggestionsVisible, setIsPermanentSuggestionsVisible] = useState(false);
-  const [birthdate, setBirthdate] = useState("");
-  const [age, setAge] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [address, setAddress] = useState(""); 
+  const [addressSuggestions, setAddressSuggestions] = useState([]); 
+  const [isAddressSuggestionsVisible, setIsAddressSuggestionsVisible] = useState(false);
   const [selectedScholarship, setSelectedScholarship] = useState("");
   const [privacyConsent, setPrivacyConsent] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [sex, setSex] = useState("");
-  const [employment, setEmployment] = useState("");
-  const [educational_attainment, setEducationalAttainment] = useState("");
-  const [birthplace, setBirthplace] = useState("");
-  const [contact_number, setContact] = useState("");
+  const [first_name, setFirstName] = useState("");
+const [middle_name, setMiddleName] = useState("");
+const [last_name, setLastName] = useState("");
+const [suffix, setSuffix] = useState("");
+const [mother_name, setMotherName] = useState("");
+const [father_name, setFatherName] = useState("");
+const [contact_number, setContact] = useState("");
+const [birthdate, setBirthdate] = useState("");
+const [birthplace, setBirthplace] = useState("");
+const [sex, setSex] = useState("");
+const [civilStatus, setCivilStatus] = useState("");
+const [employment, setEmployment] = useState("");
+const [educational_attainment, setEducationalAttainment] = useState("");
+const [age, setAge] = useState("");
+const [picture, setPicture] = useState(null);
+const [signature, setSignature] = useState(null);
 
-  
+const [courses, setCourses] = useState([]);  // State for courses
+const [selectedCourse, setSelectedCourse] = useState(""); // State for selected course
 
-
-  useEffect(() => {
-    const storedUser = JSON.parse(sessionStorage.getItem("user"));
-    const storedJwt = sessionStorage.getItem("jwt");
-  
-    if (storedJwt) {
-      setIsLogin(true);
-      setUser(storedUser);
-      setJwt(storedJwt);
+useEffect(() => {
+  const fetchCourses = async () => {
+    try {
+      const courseData = await GlobalApi.getCourses();
+      setCourses(courseData);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
     }
-  
-    console.log("Stored user:", storedUser); // Add this for debugging
-  }, []);
+  };
+
+  fetchCourses();
+}, []);
+
+useEffect(() => {
+  const storedUser = JSON.parse(sessionStorage.getItem("user"));
+  const storedJwt = sessionStorage.getItem("jwt");
+
+  if (storedJwt) {
+    setIsLogin(true);
+    setUser(storedUser);
+    setJwt(storedJwt);
+  }
+
+  console.log("Stored user:", storedUser); // Add this for debugging
+}, []);
+
   
   
   useEffect(() => {
     if (user) {
       setUsername(user.username);
       setEmail(user.email);
-      setPermanentAddress(user.address || ""); 
+      setAddress(user.address || "");
       setBirthdate(user.birthdate || "");
       setAge(user.age || "");
       setSelectedCourse(user.selectedCourse || "");
@@ -68,7 +90,15 @@ export default function Home() {
       setEmployment(user.employment || "");
       setEducationalAttainment(user.educational_attainment || "");
       setBirthplace(user.birthplace || "");
-      setContact(user.contact_number ||"");
+      setContact(user.contact_number || "");
+      setFirstName(user.first_name || "");
+      setMiddleName(user.middle_name || "");
+      setLastName(user.last_name || "");
+      setSuffix(user.suffix || "");
+      setMotherName(user.mother_name || "");
+      setFatherName(user.father_name || "");
+      setPicture(user.picture || "");
+      setSignature(user.signature || "");
     }
   }, [user]);
   
@@ -91,18 +121,115 @@ export default function Home() {
       router.push('/sign-in');
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    console.log("Registering with: ", { permanentAddress, currentAddress });
+  
+    const requiredFields = {
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      address,
+      mother_name,
+      father_name,
+      contact_number,
+      birthdate,
+      birthplace,
+      sex,
+      employment,
+      educational_attainment,
+      age,
+    };
+  
+    // Check for blank fields safely
+    const missingFields = [];
+  
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (
+        value === null ||
+        value === undefined ||
+        (typeof value === "string" && value.trim() === "")
+      ) {
+        missingFields.push(key.replace(/_/g, ' '));
+      }
+    }
+  
+    if (missingFields.length === 1) {
+      toast.error(`${missingFields[0]} is required.`);
+      return;
+    } else if (missingFields.length > 1) {
+      toast.error("Missing fields are required.");
+      return;
+    }
+  
+    // Check if contact_number is exactly 11 digits
+    if (!/^\d{11}$/.test(contact_number)) {
+      toast.error("Contact number must be exactly 11 digits.");
+      return;
+    }
+  
+    // Check if email is valid
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+  
+    // Check if privacy consent is checked
+    if (!privacyConsent) {
+      toast.error("You must agree to the privacy policy to proceed.");
+      return;
+    }
+  
+    // Proceed with saving
+    const updatedUserData = {
+      username,
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      suffix,
+      address,
+      mother_name,
+      father_name,
+      contact_number,
+      birthdate,
+      birthplace,
+      sex,
+      employment,
+      educational_attainment,
+      age,
+      privacyConsent,
+    };
+  
+    try {
+      const response = await GlobalApi.updateUser(user.id, updatedUserData, jwt);
+      console.log('API Response:', response);
+  
+      if (response?.id) {
+        setUser(response);
+        sessionStorage.setItem('user', JSON.stringify(response));
+        toast.success("Profile updated successfully!", {
+          duration: 3000,
+        });
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast.error("Failed to save changes. Please try again.");
+    }
   };
+  
+  
+  
 
-  const handlePermanentAddressChange = async (e) => {
+  const handleAddressChange = async (e) => { // Updated function to handle "address"
     const query = e.target.value;
-    setPermanentAddress(query);
-    setIsPermanentSuggestionsVisible(true);
+    setAddress(query);
+    setIsAddressSuggestionsVisible(true);
 
     if (query.length < 3) {
-      setPermanentSuggestions([]);
+      setAddressSuggestions([]);
       return;
     }
 
@@ -111,15 +238,15 @@ export default function Home() {
         `https://nominatim.openstreetmap.org/search?format=json&countrycodes=PH&q=${query}`
       );
       const results = await response.json();
-      setPermanentSuggestions(results.length ? results : []);
+      setAddressSuggestions(results.length ? results : []);
     } catch (error) {
-      console.error("Error fetching permanent address suggestions:", error);
+      console.error("Error fetching address suggestions:", error);
     }
   };
 
-  const handlePermanentAddressSelect = (selectedAddress) => {
-    setPermanentAddress(selectedAddress.display_name);
-    setIsPermanentSuggestionsVisible(false);
+  const handleAddressSelect = (selectedAddress) => { // Updated function to handle "address"
+    setAddress(selectedAddress.display_name);
+    setIsAddressSuggestionsVisible(false);
   };
 
 
@@ -138,12 +265,7 @@ export default function Home() {
     }
   };
 
-  const courses = [
-    "Electrical Installation and Maintenance",
-    "Instrumentation and Calibration",
-    "Mechatronics Servicing",
-    "Solar PV Installation"
-  ];
+
 
   const handleCourseSelect = (course) => {
     console.log("Selected course:", course);
@@ -200,23 +322,26 @@ export default function Home() {
 
         <form onSubmit={handleRegister}>
 
-        <div>
-            <label className="block text-lg font-semibold">Course for Training</label>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
-              {courses.map((course, index) => (
-                <button
-                  key={index}
-                  type="button" // Prevent accidental form submission
-                  onClick={() => handleCourseSelect(course)}
-                  className={`w-full p-3 border rounded ${
-                    selectedCourse === course ? "bg-blue-700" : "bg-blue-400"
-                  } text-white hover:bg-blue-700 transition`}
-                >
-                  {course}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Dropdown for selecting Course */}
+          <div className="mb-5 w-full">
+  <label className="block text-sm font-semibold mt-4">
+    Select Qualification
+  </label>
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
+  {courses.map((course, index) => (
+    <button
+      key={index}
+      type="button" // Prevent accidental form submission
+      onClick={() => handleCourseSelect(course)}
+      className={`w-full p-3 border rounded-xl ${
+        selectedCourse === course ? 'bg-blue-700' : 'bg-blue-400'
+      } text-white hover:bg-blue-700 transition`}
+    >
+      {course.Course_Name} {/* Display the course name */}
+    </button>
+  ))}
+</div>
+</div>
           <div className="mb-5 w-60">
           <label className="block text-sm font-semibold mt-4">
             Training Type
@@ -235,43 +360,62 @@ export default function Home() {
           </select>
           </div>
     
-
-          <label className="block text-sm font-semibold">Name <span className="text-blue-500 font-thin text-xs">update if needed</span></label>
-          <div className="flex gap-2 mb-5">
-            <div className="flex-[1.5]">
-              <Input type="text" placeholder="Last Name" className="w-full" />
-            </div>
-            <div className="flex-[2]">
-            <Input 
-                type="text" 
-                placeholder="First Name" 
-                className="w-full" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div className="flex-[0.3]">
-              <Input type="text" placeholder="Middle Initial" className="w-full" />
-            </div>
-            <div className="flex-[0.4]">
-              <Input type="text" placeholder="Suffix (Jr, Sr, II, etc.)" className="w-full" />
-            </div>
-          </div>
-
+          <div className="border-4 border-blue-400 rounded-lg">
+          <div className="mx-5 my-3">
+          <h2 className="text-xl font-bold mb-2">Profile</h2>
+          <label className="block text-sm font-semibold">Name</label>
+<div className="flex gap-2 mb-5">
+  <div className="flex-[1.25]">
+    <Input
+      type="text"
+      placeholder="Last Name"
+      className="w-full"
+      value={last_name}
+      onChange={(e) => setLastName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[1.75]">
+    <Input
+      type="text"
+      placeholder="First Name"
+      className="w-full"
+      value={first_name}
+      onChange={(e) => setFirstName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[1]">
+    <Input
+      type="text"
+      placeholder="Middle Name"
+      className="w-full"
+      value={middle_name}
+      onChange={(e) => setMiddleName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[0.4]">
+    <Input
+      type="text"
+      placeholder="Suffix (Jr, Sr, II, etc.)"
+      className="w-full"
+      value={suffix}
+      onChange={(e) => setSuffix(e.target.value)}
+    />
+  </div>
+</div>
           <div className="relative mb-5">
   <label className="block text-sm font-semibold">Address</label>
   <Input
     placeholder="Enter Address"
-    value={permanentAddress}
-    onChange={handlePermanentAddressChange}
+    value={address}
+    onChange={handleAddressChange}
     className="w-full"
   />
-  {isPermanentSuggestionsVisible && permanentSuggestions.length > 0 && (
+  {isAddressSuggestionsVisible && addressSuggestions.length > 0 && (
     <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
-      {permanentSuggestions.map((suggestion) => (
+      {addressSuggestions.map((suggestion) => (
         <li
           key={suggestion.place_id}
-          onClick={() => handlePermanentAddressSelect(suggestion)}
+          onClick={() => handleAddressSelect(suggestion)}
           className="p-2 cursor-pointer hover:bg-gray-100"
         >
           {suggestion.display_name}
@@ -284,7 +428,7 @@ export default function Home() {
           <div className="flex gap-2 mb-5">
             {/* Email Address */}
             <div className="flex-[0.4]">
-              <label className="block text-sm font-semibold">Email Address <span className="text-blue-500 font-thin text-xs">update if needed</span></label>
+              <label className="block text-sm font-semibold">Email Address</label>
               <Input 
                 type="text" 
                 placeholder="Email" 
@@ -387,10 +531,10 @@ export default function Home() {
   />
 </div>
 
-            <div className="flex-[0.5]">
+<div className="flex-[0.5]">
   <label className="block text-sm font-semibold">Contact Number</label>
   <Input 
-    type="text" 
+    type="number" 
     placeholder="Enter Contact Number"
     value={contact_number} // Binding the state value to the input
     onChange={(e) => setContact(e.target.value)} // Handling the state update properly
@@ -398,6 +542,7 @@ export default function Home() {
 </div>
 
           </div>
+          </div></div>
           
           <div className="mt-10">
             <p className="text-lg font-semibold">Privacy Consent and Disclaimer</p>
@@ -417,11 +562,10 @@ export default function Home() {
 
               {/* Button on the right */}
               <div>
-                <Link href={'/student-dashboard'}>
-                  <Button className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
+                  <Button onClick={handleRegister}
+                  className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
                     Submit Application
                   </Button>
-                </Link>
               </div>
             </div>
 

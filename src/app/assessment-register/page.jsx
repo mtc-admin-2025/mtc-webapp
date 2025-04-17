@@ -14,69 +14,222 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
 import { CircleUserRound } from 'lucide-react';
-import { ArrowDown } from "lucide-react";
+import GlobalApi from "../_utils/GlobalApi";
+import { toast } from 'sonner'; 
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
   const router = useRouter();
-  const [permanentAddress, setPermanentAddress] = useState("");
-  const [currentAddress, setCurrentAddress] = useState("");
-  const [permanentSuggestions, setPermanentSuggestions] = useState([]);
-  const [currentSuggestions, setCurrentSuggestions] = useState([]);
-  const [isPermanentSuggestionsVisible, setIsPermanentSuggestionsVisible] = useState(false);
-  const [isCurrentSuggestionsVisible, setIsCurrentSuggestionsVisible] = useState(false);
-  const [birthdate, setBirthdate] = useState("");
-  const [age, setAge] = useState("");
-  const [selectedCourse, setSelectedCourse] = useState("");
-  const [selectedAssessment, setSelectedAssessment] = useState("");
-  const [privacyConsent, setPrivacyConsent] = useState("");
-  const [workRows, setWorkRow] = useState([{ id: 1 }]);
-  const [trainingRows, setTrainingRow] = useState([{ id: 1 }]);
-  const [licenseRows, setLicenseRow] = useState([{ id: 1 }]);
-  const [compeRows, setCompeRow] = useState([{ id: 1 }]);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-
 
   
+  const [address, setAddress] = useState(""); 
+  const [addressSuggestions, setAddressSuggestions] = useState([]); 
+  const [isAddressSuggestionsVisible, setIsAddressSuggestionsVisible] = useState(false);
+  const [selectedScholarship, setSelectedScholarship] = useState("");
+  const [privacyConsent, setPrivacyConsent] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [first_name, setFirstName] = useState("");
+const [middle_name, setMiddleName] = useState("");
+const [last_name, setLastName] = useState("");
+const [suffix, setSuffix] = useState("");
+const [mother_name, setMotherName] = useState("");
+const [father_name, setFatherName] = useState("");
+const [contact_number, setContact] = useState("");
+const [birthdate, setBirthdate] = useState("");
+const [birthplace, setBirthplace] = useState("");
+const [sex, setSex] = useState("");
+const [civil_status, setCivilStatus] = useState("");
+const [employment, setEmployment] = useState("");
+const [educational_attainment, setEducationalAttainment] = useState("");
+const [age, setAge] = useState("");
+const [picture, setPicture] = useState(null);
+const [signature, setSignature] = useState(null);
 
-  useEffect(() => {
-      setIsLogin(sessionStorage.getItem('jwt') ? true : false);
-      setUser(JSON.parse(sessionStorage.getItem('user')));
-      setJwt(sessionStorage.getItem('jwt'));
-  }, []);
+const [courses, setCourses] = useState([]);  // State for courses
+const [selectedCourse, setSelectedCourse] = useState(""); // State for selected course
 
+useEffect(() => {
+  const fetchCourses = async () => {
+    try {
+      const courseData = await GlobalApi.getCourses();
+      setCourses(courseData);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    }
+  };
+
+  fetchCourses();
+}, []);
+
+useEffect(() => {
+  const storedUser = JSON.parse(sessionStorage.getItem("user"));
+  const storedJwt = sessionStorage.getItem("jwt");
+
+  if (storedJwt) {
+    setIsLogin(true);
+    setUser(storedUser);
+    setJwt(storedJwt);
+  }
+
+  console.log("Stored user:", storedUser); // Add this for debugging
+}, []);
+
+  
+  
   useEffect(() => {
     if (user) {
-      setUsername(user.username); // 
+      setUsername(user.username);
+      setEmail(user.email);
+      setAddress(user.address || "");
+      setBirthdate(user.birthdate || "");
+      setAge(user.age || "");
+      setSelectedCourse(user.selectedCourse || "");
+      setSelectedScholarship(user.selectedScholarship || "");
+      setSex(user.sex || "");
+      setEmployment(user.employment || "");
+      setEducationalAttainment(user.educational_attainment || "");
+      setBirthplace(user.birthplace || "");
+      setContact(user.contact_number || "");
+      setFirstName(user.first_name || "");
+      setMiddleName(user.middle_name || "");
+      setLastName(user.last_name || "");
+      setSuffix(user.suffix || "");
+      setMotherName(user.mother_name || "");
+      setFatherName(user.father_name || "");
+      setPicture(user.picture || "");
+      setSignature(user.signature || "");
+      setCivilStatus(user.civil_status|| "");
     }
   }, [user]);
-
+  
   useEffect(() => {
-    if (user) {
-      setEmail(user.email); 
+    if (birthdate) {
+      const birthDate = new Date(birthdate);
+      const currentDate = new Date();
+
+      const calculatedAge = currentDate.getFullYear() - birthDate.getFullYear();
+      const monthDifference = currentDate.getMonth() - birthDate.getMonth();
+      const dayDifference = currentDate.getDate() - birthDate.getDate();
+
+      const finalAge = monthDifference < 0 || (monthDifference === 0 && dayDifference < 0) ? calculatedAge - 1 : calculatedAge;
+      setAge(finalAge);
     }
-  }, [user]);
+  }, [birthdate]);
 
   const onSignOut = () => {
       sessionStorage.clear();
       router.push('/sign-in');
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    console.log("Registering with: ", { permanentAddress, currentAddress });
+  
+    const requiredFields = {
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      address,
+      mother_name,
+      father_name,
+      contact_number,
+      birthdate,
+      birthplace,
+      sex,
+      employment,
+      educational_attainment,
+      age,
+    };
+  
+    // Check for blank fields safely
+    const missingFields = [];
+  
+    for (const [key, value] of Object.entries(requiredFields)) {
+      if (
+        value === null ||
+        value === undefined ||
+        (typeof value === "string" && value.trim() === "")
+      ) {
+        missingFields.push(key.replace(/_/g, ' '));
+      }
+    }
+  
+    if (missingFields.length === 1) {
+      toast.error(`${missingFields[0]} is required.`);
+      return;
+    } else if (missingFields.length > 1) {
+      toast.error("Missing fields are required.");
+      return;
+    }
+  
+    // Check if contact_number is exactly 11 digits
+    if (!/^\d{11}$/.test(contact_number)) {
+      toast.error("Contact number must be exactly 11 digits.");
+      return;
+    }
+  
+    // Check if email is valid
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+  
+    // Check if privacy consent is checked
+    if (!privacyConsent) {
+      toast.info("You must agree to the privacy policy to proceed.");
+      return;
+    }
+  
+    // Proceed with saving
+    const updatedUserData = {
+      username,
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      suffix,
+      address,
+      mother_name,
+      father_name,
+      contact_number,
+      birthdate,
+      birthplace,
+      sex,
+      employment,
+      educational_attainment,
+      age,
+      privacyConsent,
+    };
+  
+    try {
+      const response = await GlobalApi.updateUser(user.id, updatedUserData, jwt);
+      console.log('API Response:', response);
+  
+      if (response?.id) {
+        setUser(response);
+        sessionStorage.setItem('user', JSON.stringify(response));
+        toast.success("Profile updated successfully!", {
+          duration: 3000,
+        });
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast.error("Failed to save changes. Please try again.");
+    }
   };
-
-  const handlePermanentAddressChange = async (e) => {
+  
+  const handleAddressChange = async (e) => { // Updated function to handle "address"
     const query = e.target.value;
-    setPermanentAddress(query);
-    setIsPermanentSuggestionsVisible(true);
+    setAddress(query);
+    setIsAddressSuggestionsVisible(true);
 
     if (query.length < 3) {
-      setPermanentSuggestions([]);
+      setAddressSuggestions([]);
       return;
     }
 
@@ -85,42 +238,17 @@ export default function Home() {
         `https://nominatim.openstreetmap.org/search?format=json&countrycodes=PH&q=${query}`
       );
       const results = await response.json();
-      setPermanentSuggestions(results.length ? results : []);
+      setAddressSuggestions(results.length ? results : []);
     } catch (error) {
-      console.error("Error fetching permanent address suggestions:", error);
+      console.error("Error fetching address suggestions:", error);
     }
   };
 
-  const handlePermanentAddressSelect = (selectedAddress) => {
-    setPermanentAddress(selectedAddress.display_name);
-    setIsPermanentSuggestionsVisible(false);
+  const handleAddressSelect = (selectedAddress) => { // Updated function to handle "address"
+    setAddress(selectedAddress.display_name);
+    setIsAddressSuggestionsVisible(false);
   };
 
-  const handleCurrentAddressChange = async (e) => {
-    const query = e.target.value;
-    setCurrentAddress(query);
-    setIsCurrentSuggestionsVisible(true);
-
-    if (query.length < 3) {
-      setCurrentSuggestions([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&countrycodes=PH&q=${query}`
-      );
-      const results = await response.json();
-      setCurrentSuggestions(results.length ? results : []);
-    } catch (error) {
-      console.error("Error fetching current address suggestions:", error);
-    }
-  };
-
-  const handleCurrentAddressSelect = (selectedAddress) => {
-    setCurrentAddress(selectedAddress.display_name);
-    setIsCurrentSuggestionsVisible(false);
-  };
 
   const handleBirthdateChange = (e) => {
     const selectedDate = e.target.value;
@@ -136,35 +264,9 @@ export default function Home() {
       setAge("");
     }
   };
-
-  const courses = [
-    "Electrical Installation and Maintenance",
-    "Instrumentation and Calibration",
-    "Mechatronics Servicing",
-    "Solar PV Installation"
-  ];
-
   const handleCourseSelect = (course) => {
     console.log("Selected course:", course);
     setSelectedCourse(course);
-  };
-
-  
-
-  const addWorkRow = () => {
-    setWorkRow([...workRows, { id: workRows.length + 1 }]);
-  };
-
-  const addTrainingRow = () => {
-    setTrainingRow([...trainingRows, { id: trainingRows.length + 1 }]);
-  };
-
-  const addLicenseRow = () => {
-    setLicenseRow([...licenseRows, { id: licenseRows.length + 1 }]);
-  };
-
-  const addCompeRow = () => {
-    setCompeRow([...compeRows, { id: compeRows.length + 1 }]);
   };
 
   return (
@@ -217,93 +319,111 @@ export default function Home() {
 
         <form onSubmit={handleRegister}>
 
-        <div>
-            <label className="block text-lg font-semibold">Course for Assessment</label>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
-              {courses.map((course, index) => (
-                <button
-                  key={index}
-                  type="button" // Prevent accidental form submission
-                  onClick={() => handleCourseSelect(course)}
-                  className={`w-full p-3 border rounded ${
-                    selectedCourse === course ? "bg-blue-700" : "bg-blue-400"
-                  } text-white hover:bg-blue-700 transition`}
-                >
-                  {course}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Dropdown for selecting Course */}
+          <div className="mb-5 w-full">
+  <label className="block text-sm font-semibold mt-4">
+    Select Qualification
+  </label>
+  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
+  {courses.map((course, index) => (
+    <button
+      key={index}
+      type="button" // Prevent accidental form submission
+      onClick={() => handleCourseSelect(course)}
+      className={`w-full p-3 border rounded-xl ${
+        selectedCourse === course ? 'bg-blue-700' : 'bg-blue-400'
+      } text-white hover:bg-blue-700 transition`}
+    >
+      {course.Course_Name} {/* Display the course name */}
+    </button>
+  ))}
+</div>
+</div>
+
+
+
           <div className="mb-5 w-60">
           <label className="block text-sm font-semibold mt-4">
-            Client Type
+            Assessment Type
           </label>
           <select
-            className="w-full p-3 border rounded-lg "
-            value={selectedAssessment}
-            onChange={(e) => setSelectedAssessment(e.target.value)}
+            className="w-full p-3 border rounded-md"
+            value={selectedScholarship}
+            onChange={(e) => setSelectedScholarship(e.target.value)}
           >
-            <option value="">Select Client Type</option>
-            <option value="TVET Graduating Student">TVET Graduating Student</option>
-            <option value="TVET Graduate">TVET Graduate </option>
-            <option value="Industry Worker">Industry Worker </option>
-            <option value="K-12">K-12 </option>
-            <option value="OFW">OFW</option>
+            <option value="">Select Assessment Type</option>
+            <option value="Paid Assessment">Paid Assessment</option>
+            <option value="TWSP">TWSP Scholarship</option>
+            <option value="PESFA">PESFA Scholarship</option>
+            <option value="STEP">STEP Scholarship</option>
+            <option value="others">Others</option>
           </select>
           </div>
-
+    
           <div className="border-4 border-blue-400 rounded-lg">
           <div className="mx-5 my-3">
           <h2 className="text-xl font-bold mb-2">Profile</h2>
           <label className="block text-sm font-semibold">Name</label>
-          <div className="flex gap-2 mb-5">
-            <div className="flex-[1.5]">
-              <Input type="text" placeholder="Last Name" className="w-full" />
-            </div>
-            <div className="flex-[2]">
-              <Input 
-                type="text" 
-                placeholder="First Name" 
-                className="w-full" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div className="flex-[0.3]">
-              <Input type="text" placeholder="Middle Initial" className="w-full" />
-            </div>
-            <div className="flex-[0.4]">
-              <Input type="text" placeholder="Suffix (Jr, Sr, II, etc.)" className="w-full" />
-            </div>
-          </div>
-
+<div className="flex gap-2 mb-5">
+  <div className="flex-[1.25]">
+    <Input
+      type="text"
+      placeholder="Last Name"
+      className="w-full"
+      value={last_name}
+      onChange={(e) => setLastName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[1.75]">
+    <Input
+      type="text"
+      placeholder="First Name"
+      className="w-full"
+      value={first_name}
+      onChange={(e) => setFirstName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[1]">
+    <Input
+      type="text"
+      placeholder="Middle Name"
+      className="w-full"
+      value={middle_name}
+      onChange={(e) => setMiddleName(e.target.value)}
+    />
+  </div>
+  <div className="flex-[0.4]">
+    <Input
+      type="text"
+      placeholder="Suffix (Jr, Sr, II, etc.)"
+      className="w-full"
+      value={suffix}
+      onChange={(e) => setSuffix(e.target.value)}
+    />
+  </div>
+</div>
           <div className="relative mb-5">
-            <label className="block text-sm font-semibold">Permanent Address (for Mailing)</label>
-            <Input placeholder="Enter Permanent Address" value={permanentAddress} onChange={handlePermanentAddressChange} className="w-full" />
-            {isPermanentSuggestionsVisible && permanentSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
-                {permanentSuggestions.map((suggestion) => (
-                  <li key={suggestion.place_id} onClick={() => handlePermanentAddressSelect(suggestion)} className="p-2 cursor-pointer hover:bg-gray-100">
-                    {suggestion.display_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="relative mb-5">
-            <label className="block text-sm font-semibold">Current Address</label>
-            <Input placeholder="Enter Current Address" value={currentAddress} onChange={handleCurrentAddressChange} className="w-full" />
-            {isCurrentSuggestionsVisible && currentSuggestions.length > 0 && (
-              <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
-                {currentSuggestions.map((suggestion) => (
-                  <li key={suggestion.place_id} onClick={() => handleCurrentAddressSelect(suggestion)} className="p-2 cursor-pointer hover:bg-gray-100">
-                    {suggestion.display_name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+  <label className="block text-sm font-semibold">Address</label>
+  <Input
+    placeholder="Enter Address"
+    value={address}
+    onChange={handleAddressChange}
+    className="w-full"
+  />
+  {isAddressSuggestionsVisible && addressSuggestions.length > 0 && (
+    <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 shadow-lg max-h-40 overflow-y-auto z-10">
+      {addressSuggestions.map((suggestion) => (
+        <li
+          key={suggestion.place_id}
+          onClick={() => handleAddressSelect(suggestion)}
+          className="p-2 cursor-pointer hover:bg-gray-100"
+        >
+          {suggestion.display_name}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
           <div className="flex gap-2 mb-5">
             {/* Email Address */}
@@ -321,48 +441,63 @@ export default function Home() {
             {/* Sex */}
             <div className="flex-[0.2]">
               <label className="block text-sm font-semibold">Sex</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Sex</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              <select
+              className="w-full p-2 border rounded-md"
+              value={sex}
+              onChange={(e) => setSex(e.target.value)} // Update the state when the selection changes
+            >
+              <option value="" disabled hidden>Select Sex</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
             </div>
 
-            {/* Employment (Before Training) */}
+            {/* Employment (Before Assessment) */}
             <div className="flex-[0.3]">
               <label className="block text-sm font-semibold">Employment</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Employment</option>
-                <option value="Employed">Employed</option>
-                <option value="Unemployed">Unemployed</option>
-                <option value="Self-Employed">Self-Employed</option>
-                <option value="Student">Student</option>
-              </select>
+              <select
+  className="w-full p-2 border rounded-md"
+  value={employment}
+  onChange={(e) => setEmployment(e.target.value)}
+>
+  <option value="" disabled hidden>Select Employment</option>
+  <option value="Employed">Employed</option>
+  <option value="Unemployed">Unemployed</option>
+  <option value="Self-Employed">Self-Employed</option>
+  <option value="Student">Student</option>
+</select>
+
             </div>
 
-            {/* Educational Attainment (Before Training) */}
+            {/* Educational Attainment (Before Assessment) */}
             <div className="flex-[0.3]">
-              <label className="block text-sm font-semibold">Educational Attainment</label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="" disabled selected hidden>Select Educational Attainment</option>
-                <option value="No Grade Completed">No Grade Completed</option>
-                <option value="Elementary Undergraduate">Elementary Undergraduate</option>
-                <option value="Elementary Graduate">Elementary Graduate</option>
-                <option value="High School Undergraduate">High School Undergraduate</option>
-                <option value="High School Graduate">High School Graduate</option>
-                <option value="Junior High (K-12)">Junior High (K-12)</option>
-                <option value="Senior High (K-12)">Senior High (K-12)</option>
-                <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate">
-                  Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate
-                </option>
-                <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Graduate">
-                  Post-Secondary Non-Tertiary/Technical Vocational Course Graduate
-                </option>
-                <option value="College Undergraduate">College Undergraduate</option>
-                <option value="College Graduate">College Graduate</option>
-                <option value="Masteral">Masteral</option>
-                <option value="Doctorate">Doctorate</option>
-              </select>
+              <label className="block text-sm font-semibold"
+              value={educational_attainment}
+              onChange={(e) => setEducationalAttainment(e.target.value)}>Educational Attainment</label>
+               <select
+    className="w-full p-2 border rounded-md"
+    value={educational_attainment} // Binding to state value
+    onChange={(e) => setEducationalAttainment(e.target.value)} // Updating state on change
+  >
+    <option value="" disabled hidden>Select Educational Attainment</option>
+    <option value="No Grade Completed">No Grade Completed</option>
+    <option value="Elementary Undergraduate">Elementary Undergraduate</option>
+    <option value="Elementary Graduate">Elementary Graduate</option>
+    <option value="High School Undergraduate">High School Undergraduate</option>
+    <option value="High School Graduate">High School Graduate</option>
+    <option value="Junior High (K-12)">Junior High (K-12)</option>
+    <option value="Senior High (K-12)">Senior High (K-12)</option>
+    <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate">
+      Post-Secondary Non-Tertiary/Technical Vocational Course Undergraduate
+    </option>
+    <option value="Post-Secondary Non-Tertiary/Technical Vocational Course Graduate">
+      Post-Secondary Non-Tertiary/Technical Vocational Course Graduate
+    </option>
+    <option value="College Undergraduate">College Undergraduate</option>
+    <option value="College Graduate">College Graduate</option>
+    <option value="Masteral">Masteral</option>
+    <option value="Doctorate">Doctorate</option>
+  </select>
             </div>
           </div>
 
@@ -385,111 +520,46 @@ export default function Home() {
               />
             </div>
 
-            <div className="flex-[0.2]">
-              <label className="block text-sm font-semibold">Civil Status</label>
-              <select className="w-full p-2 rounded-md">
-                <option value="" disabled selected hidden>Select Status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Widow/er">Widow/er</option>
-                <option value="Separated">Separated</option>
-              </select>
-            </div>
-
             {/* Birthplace */}
+            <div className="flex-auto">
+  <label className="block text-sm font-semibold">Birthplace</label>
+  <Input
+    type="text"
+    placeholder="Enter Birthplace"
+    value={birthplace}
+    onChange={(e) => setBirthplace(e.target.value)} // Ensure this is set to update state
+  />
+</div>
+
+<div className="flex-[0.2]">
+              <label className="block text-sm font-semibold">Civil Status</label>
+              <select
+              className="w-full p-2 border rounded-md"
+              value={civil_status}
+              onChange={(e) => setCivilStatus(e.target.value)} // Update the state when the selection changes
+            >
+              <option value="" disabled hidden>Select Civil Status</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Separated">Separated</option>
+              <option value="Widowed">Widowed</option>
+            </select>
+            </div> 
+
             <div className="flex-[0.5]">
-              <label className="block text-sm font-semibold">Birthplace</label>
-              <Input type="text" placeholder="Enter Birthplace"/>
-            </div>
-            </div>
+  <label className="block text-sm font-semibold">Contact Number</label>
+  <Input 
+    type="text" 
+    placeholder="Enter Contact Number"
+    value={contact_number} // Binding the state value to the input
+    onChange={(e) => setContact(e.target.value)} // Handling the state update properly
+  />
+</div>
+
           </div>
-          </div>
-
-          <div className="border-4 border-gray-400 rounded-lg mt-4">
-            <div className="mx-5 my-3">
-              <h2 className="text-xl font-bold">Work Experience (National Qualification-related)</h2>
-              {workRows.map((workRows) => (
-                <div key={workRows.id} className="border rounded-md flex flex-wrap gap-4">
-                  <Input type="text" placeholder="Name of Company" className="w-[600px]" />
-                  <Input type="text" placeholder="Position" className="w-[200px]" />
-                  <Input type="date" placeholder="Inclusive Dates(Start)" className="w-[150px]" />
-                  <Input type="date" placeholder="Inclusive Dates(End)" className="w-[150px]" />
-                  <Input type="number" placeholder="₱ Monthly Salary" className="w-[250px]" min="0" step="0.01"/>
-                  <select className="flex-1 min-w-[250px] rounded-lg">
-                    <option value="" disabled selected hidden>Select Status of Appointment</option>
-                    <option value="permanent">Permanent</option>
-                    <option value="temporary">Temporary</option>
-                    <option value="provisional">Provisional</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <Input type="number" placeholder="No. of Yrs. Working Exp." className="w-[250px]" />
-                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addWorkRow}>
-                    <ArrowDown className="mr-2" /> Add
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-
-          <div className="border-4 border-gray-400 rounded-lg mt-4">
-            <div className="mx-5 my-3">
-              <h2 className="text-xl font-bold">Other Training/Seminars Attended (National Qualification-related)</h2>
-              {trainingRows.map((trainingRows) => (
-                <div key={trainingRows.id} className="border rounded-md flex flex-wrap gap-4">
-                  <Input type="text" placeholder="Title" className="w-[600px]" />
-                  <Input type="text" placeholder="Venue" className="w-[440px]" />
-                  <Input type="date" placeholder="Inclusive Dates(Start)" className="w-[170px]" />
-                  <Input type="date" placeholder="Inclusive Dates(End)" className="w-[170px]" />
-                  <Input type="number" placeholder="No. of Hours" className="w-[250px]" min="0" step="0.01"/>
-                  <Input type="text" placeholder="Conducted By" className="w-[250px]" />
-                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addTrainingRow}>
-                    <ArrowDown className="mr-2" /> Add
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-4 border-gray-400 rounded-lg mt-4">
-            <div className="mx-5 my-3">
-              <h2 className="text-xl font-bold">Licensure Examination/s Passed</h2>
-              {licenseRows.map((licenseRows) => (
-                <div key={licenseRows.id} className="border rounded-md flex flex-wrap gap-4">
-                  <Input type="text" placeholder="Title" className="w-[600px]" />
-                  <Input type="number" placeholder="Years Taken" className="w-[200px]" />
-                  <Input type="text" placeholder="Examination Venue" className="w-[480px]" />
-                  <Input type="text" placeholder="Rating" className="w-[200px]" />
-                  <Input type="text" placeholder="Remarks" className="w-[200px]" />
-                  <Input type="date" placeholder="Expiry Date" className="w-[200px]" />
-                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addLicenseRow}>
-                    <ArrowDown className="mr-2" /> Add
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="border-4 border-gray-400 rounded-lg mt-4">
-            <div className="mx-5 my-3">
-              <h2 className="text-xl font-bold">Competency Assessment/s Passed</h2>
-              {compeRows.map((compeRows) => (
-                <div key={compeRows.id} className="border rounded-md flex flex-wrap gap-4">
-                  <Input type="text" placeholder="Title" className="w-[600px]" />
-                  <Input type="number" placeholder="Qualification Level" className="w-[200px]" />
-                  <Input type="text" placeholder="Industry Sector" className="w-[420px]" />
-                  <Input type="text" placeholder="Certificate Number" className="w-[260px]" />
-                  <Input type="date" placeholder="Date of Issuance" className="w-[200px]" />
-                  <Input type="date" placeholder="Expiration Date" className="w-[200px]" />
-                  <Button className="flex items-center bg-blue-400 hover:bg-blue-600" onClick={addCompeRow}>
-                    <ArrowDown className="mr-2" /> Add
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-
+          </div></div>
+          
           <div className="mt-10">
             <p className="text-lg font-semibold">Privacy Consent and Disclaimer</p>
 
@@ -508,11 +578,10 @@ export default function Home() {
 
               {/* Button on the right */}
               <div>
-                <Link href={'/student-dashboard'}>
-                  <Button className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
+                  <Button onClick={handleRegister}
+                  className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
                     Submit Application
                   </Button>
-                </Link>
               </div>
             </div>
 
@@ -528,9 +597,9 @@ export default function Home() {
                 className="mr-2"
               />
               <label htmlFor="agree" className="mr-4">Agree</label>
-              
             </div>
           </div>
+
         </form>
       </div>
     </div>

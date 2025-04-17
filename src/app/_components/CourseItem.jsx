@@ -33,17 +33,18 @@ const CourseItem = ({ course }) => {
 
   // Function to determine the appropriate image
   const getDefaultImage = (courseName) => {
-    if (!courseName) return "/default-course.webp"; // Fallback WebP image
+    if (!courseName || typeof courseName !== "string") return "/coursebanner.png";
     const matched = courseImageMap.find(item =>
       courseName.toLowerCase().includes(item.keyword.toLowerCase())
     );
-    return matched ? matched.image : "/default-course.webp";
+    return matched?.image || "/coursebanner.png";
   };
+  
 
   // Select Strapi image if available, otherwise use mapped WebP image
-  const courseImage = course.Image?.data?.[0]?.attributes?.url
-    ? `${BASE_URL}${course.Image.data[0].attributes.url}`
-    : getDefaultImage(course.Course_Name);
+  const courseImage = course?.Image?.data?.[0]?.attributes?.url
+  ? `${BASE_URL}${course.Image.data[0].attributes.url}`
+  : getDefaultImage(course?.Course_Name);
 
     const today = new Date();
 

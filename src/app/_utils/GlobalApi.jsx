@@ -83,16 +83,34 @@ const getEnrolledCourses = (userEmail, jwt) => {
 const updateUser = (userId, updatedUser, jwt) => {
     console.log("Updating user with ID:", userId);
     console.log("Updated data:", updatedUser);
-
+  
+    // Prepare the data with all the updated fields
     const data = {
-      username: updatedUser.username,
-      email: updatedUser.email,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        first_name: updatedUser.first_name,
+        middle_name: updatedUser.middle_name,
+        last_name: updatedUser.last_name,
+        suffix: updatedUser.suffix,
+        address: updatedUser.address,
+        mother_name: updatedUser.mother_name,
+        father_name: updatedUser.father_name,
+        contact_number: updatedUser.contact_number,
+        birthdate: updatedUser.birthdate,
+        birthplace: updatedUser.birthplace,
+        sex: updatedUser.sex,
+        civil_status: updatedUser.civil_status,
+        employment: updatedUser.employment,
+        educational_attainment: updatedUser.educational_attainment,
+        age: updatedUser.age,
+        picture: updatedUser.picture,
+        signature: updatedUser.signature
     };
-
+  
     return axiosClient
       .put(
         `/users/${userId}`,
-        data, // Directly send the data object without wrapping it in another "data" object
+        data, 
         {
           headers: {
             Authorization: `Bearer ${jwt}`,
@@ -107,11 +125,40 @@ const updateUser = (userId, updatedUser, jwt) => {
         console.error("Error updating user:", error.response?.data || error.message);
         throw error;
       });
-};
+  };
+  
 
-
-
+const updateCourse = async (courseId, updatedCourse, jwt) => {
+    try {
+      console.log("Updating course with ID:", courseId);
+      console.log("Updated data:", updatedCourse);
     
+      const data = {
+        Course_ID: updatedCourse.Course_ID,
+        Course_Name: updatedCourse.Course_Name,
+      };
+    
+      // Make the PUT request to Strapi
+      const response = await axiosClient.put(
+        `/courses/${courseId}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+  
+      console.log("Response from Strapi:", response.data);
+      return response.data;
+  
+    } catch (error) {
+      console.error("Error updating course:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+  
+  
 const GlobalApi = {
     registerUser,
     SignIn,
@@ -123,6 +170,8 @@ const GlobalApi = {
     deleteCourse,
     getEnrolledCourses,
     updateUser,
+    updateCourse,
+    
 }
 
 

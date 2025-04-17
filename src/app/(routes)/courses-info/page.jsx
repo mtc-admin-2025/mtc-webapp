@@ -7,7 +7,6 @@ import Image from "next/image";
 import GlobalApi from "@/app/_utils/GlobalApi";
 import Link from "next/link";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,16 +33,30 @@ export default function CoursesPage() {
   const [courseList, setCourseList] = useState([]);
   const [trainerList, setTrainerList] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    const storedJwt = sessionStorage.getItem("jwt");
+    
+    if (storedJwt) {
+      setIsLogin(true);
+      setUser(storedUser);
+      setJwt(storedJwt);
+    }
+  }, []);
+
   const [newCourse, setNewCourse] = useState({
     Course_ID: "",
     Course_Name: "",
   });
   const [newTrainerId, setNewTrainerId] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-
+  const [editedCourse, setEditedCourse] = useState({ Course_ID: "", Course_Name: "" });
+  const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+  const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false);
+  
   const [searchQuery, setSearchQuery] = useState("");
 
 
@@ -75,13 +88,58 @@ export default function CoursesPage() {
     fetchCourses();
   }, []);
 
+  const handleEditCourseClick = (course) => {
+    setSelectedCourse(course);
+    setEditedCourse({
+      Course_ID: course.Course_ID,
+      Course_Name: course.Course_Name,
+    });
+    setIsEditCourseModalOpen(true);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedCourse((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const updatedCourseData = await GlobalApi.updateCourse(
+        selectedCourse.id, // Assuming selectedCourse has an 'id' field
+        { data: editedCourse }, // Wrap the data inside 'data' key
+        jwt
+      );
+  
+      console.log("Updated Course Data:", updatedCourseData);
+      setCourseList((prevCourses) =>
+        prevCourses.map((course) =>
+          course.id === selectedCourse.id ? updatedCourseData.data : course
+        )
+      );
+  
+      setIsModalOpen(false);
+      toast.success("Course updated successfully!");
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast.error("Failed to save changes. Please try again.");
+    }
+  };
+  
+
+  const handleCloseModal = () => {
+    setIsEditCourseModalOpen(false);
+  };
+
   const onSignOut = () => {
     sessionStorage.clear();
     router.push("/sign-in");
   };
 
   const handleCreateCourse = async () => {
-    if (!newCourse.Course_ID || !newCourse.Course_Name || !newTrainerId) {
+    if (!newCourse.Course_ID || !newCourse.Course_Name) {
       toast.error("Please fill in all fields.");
       return;
     }
@@ -91,7 +149,6 @@ export default function CoursesPage() {
         { 
           Course_ID: newCourse.Course_ID, 
           Course_Name: newCourse.Course_Name, 
-          trainer: newTrainerId 
         }, 
         jwt
       );
@@ -102,12 +159,12 @@ export default function CoursesPage() {
         });
 
         setCourseList([...courseList, response.data]); // Update UI immediately
-        setIsModalOpen(false);
+        setIsAddCourseModalOpen(false);
         setNewCourse({ Course_ID: "", Course_Name: "" });
         setNewTrainerId("");
       }
     } catch (error) {
-      console.error("Error adding course:", error);
+      console.error("Error adding course:", error.response?.data || error.message || error);
       toast.error("Failed to add course.");
     }
   };
@@ -262,7 +319,7 @@ export default function CoursesPage() {
   <h1 className="text-4xl font-bold text-gray-800">{user?.username}</h1>
 
   {/* Header Section with Manage Courses, Search Bar & Add Course Button */}
-  <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-20 flex items-center justify-between">
+  <h2 className="text-2xl font-bold text-gray-800 mb-4 mt-10  flex items-center justify-between">
   Manage Courses
   <div className="flex items-center gap-x-2"> 
     {/* 🔍 Search Bar */}
@@ -281,7 +338,7 @@ export default function CoursesPage() {
     {/* ➕ Add Course Button */}
     <button 
       className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-lg font-semibold px-6 py-3 ml-2 rounded-xl shadow-md transform transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-blue-600 hover:shadow-lg"
-      onClick={() => setIsModalOpen(true)}
+      onClick={() => setIsAddCourseModalOpen(true)}
     >
       + Add Course
     </button>
@@ -295,7 +352,6 @@ export default function CoursesPage() {
       <tr>
         <th className="p-4 rounded-tl-xl">Course ID</th>
         <th className="p-4">Course Name</th>
-        <th className="p-4">Trainer</th>
         <th className="p-4 rounded-tr-xl"></th>
       </tr>
     </thead>
@@ -307,16 +363,12 @@ export default function CoursesPage() {
 
           return (
             <tr key={index} className="border-t-2">
-              <td className="p-4 rounded-bl-xl">{course.Course_ID}</td>
+              <td className="p-4 rounded-bl-xl font-semibold">{course.Course_ID}</td>
               <td className="p-4">{course.Course_Name}</td>
-              <td className="p-4">{trainer ? trainer.Name : "N/A"}</td>
               <td className="p-4 rounded-br-xl text-center">
                 <button
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                  onClick={() => {
-                    setSelectedCourse(course); // Set the selected course details
-                    setIsDetailsModalOpen(true); // Open the modal
-                  }}
+                  onClick={() => handleEditCourseClick(course)}
                 >
                   Manage Details
                 </button>
@@ -334,96 +386,97 @@ export default function CoursesPage() {
 </div>
 
       </div>
-      {/* Add Course Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg w-[400px] overflow-hidden">
-          {/* Full-width Blue Header */}
-          <div className="bg-blue-600 w-full py-4 text-center">
-            <h2 className="text-2xl font-bold text-white">Add New Course</h2>
-          </div>
-      
-          {/* Form Fields */}
-          <div className="p-6 flex flex-col gap-4">
-            <input 
-              type="text" 
-              placeholder="Course ID" 
-              className="p-2 border rounded-md w-full" 
-              onChange={(e) => setNewCourse({...newCourse, Course_ID: e.target.value})} 
-            />
-            <input 
-              type="text" 
-              placeholder="Course Name" 
-              className="p-2 border rounded-md w-full" 
-              onChange={(e) => setNewCourse({...newCourse, Course_Name: e.target.value})} 
-            />
+{/* Add Course Modal */}
+{isAddCourseModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white rounded-xl shadow-lg w-[400px] overflow-hidden">
+      {/* Full-width Blue Header */}
+      <div className="bg-blue-600 w-full py-4 text-center">
+        <h2 className="text-2xl font-bold text-white">Add New Course</h2>
+      </div>
 
-<select 
-  className="p-2 border rounded-md w-full"
-  onChange={(e) => setNewTrainerId(e.target.value)}
-  value={newTrainerId}
->
-  <option value="">Select Trainer</option>
-  {trainerList.map((trainer) => (
-    <option key={trainer.id} value={trainer.id}>
-      {trainer.Name}
-    </option>
-  ))}
-</select>
-
-      
-            {/* Buttons */}
-            <div className="flex justify-between mt-4">
-              <button 
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                onClick={handleCreateCourse}
-              >
-                Submit
-              </button>
-              <button 
-                className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400 transition"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+      {/* Form Fields */}
+      <div className="p-6 flex flex-col">
+        <label htmlFor="Course_ID" className="block font-bold">Course ID</label>
+        <input 
+          type="text" 
+          placeholder="Course ID" 
+          className="p-2 border rounded-md w-full" 
+          onChange={(e) => setNewCourse({...newCourse, Course_ID: e.target.value})} 
+        />
+        <label htmlFor="Course_Name" className="block font-bold mt-4">Course Name</label>
+        <input 
+          type="text" 
+          placeholder="Course Name" 
+          className="p-2 border rounded-md w-full" 
+          onChange={(e) => setNewCourse({...newCourse, Course_Name: e.target.value})} 
+        />
+        {/* Buttons */}
+        <div className="justify-end flex mt-4">
+          <button 
+            className="bg-green-500 text-white px-4 py-2 rounded-lg ml-3 hover:bg-green-700 transition"
+            onClick={handleCreateCourse}
+          >
+            Save Details
+          </button>
+          <button 
+            className="bg-red-500 text-white px-4 py-2 rounded-lg ml-3 hover:bg-red-700 transition"
+            onClick={() => setIsAddCourseModalOpen(false)} // Close the Add Course modal
+          >
+            Cancel
+          </button>
         </div>
       </div>
-      
-        )}
-
-{isDetailsModalOpen && selectedCourse && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white rounded-xl shadow-lg p-6 w-[400px]">
-      {/* Modal Header */}
-      <div className="flex justify-between items-center border-b pb-3">
-        <h2 className="text-2xl font-bold text-gray-800">Course Details</h2>
-        <button
-          onClick={() => setIsDetailsModalOpen(false)}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <CircleX className="text-red-600 h-8 w-8" />
-        </button>
-      </div>
-
-      {/* Course Information */}
-      <div className="mt-4">
-        <p><strong>Course ID:</strong> {selectedCourse.Course_ID}</p>
-        <p><strong>Course Name:</strong> {selectedCourse.Course_Name}</p>
-        <p><strong>Trainer:</strong> {selectedCourse.trainer ? selectedCourse.trainer.Name : "N/A"}</p>
-      </div>
-
-      <button
-  className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg w-full hover:bg-red-700 transition"
-  onClick={() => handleDeleteCourse(selectedCourse.Course_ID)}
->
-  Delete Course
-</button>
     </div>
   </div>
 )}
 
+{/* Edit Course Modal */}
+{isEditCourseModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white rounded-xl shadow-lg w-[400px] overflow-hidden">
+      {/* Full-width Blue Header */}
+      <div className="bg-blue-600 w-full py-4 text-center">
+        <h2 className="text-2xl font-bold text-white">Edit Course</h2>
+      </div>
+
+      {/* Form Fields */}
+      <div className="p-6 flex flex-col">
+        <label htmlFor="Course_ID" className="block font-bold">Course ID</label>
+        <input
+          type="text"
+          value={editedCourse.Course_ID}
+          onChange={handleInputChange}
+          className="p-2 border rounded-md w-full"
+          placeholder="Course ID"
+        />
+        <label htmlFor="Course_Name" className="block font-bold mt-4">Course Name</label>
+        <input
+          type="text"
+          value={editedCourse.Course_Name}
+          onChange={handleInputChange}
+          className="p-2 border rounded-md w-full"
+          placeholder="Course Name"
+        />
+        {/* Buttons */}
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={handleSaveChanges}
+            className="bg-green-500 text-white px-4 py-2 rounded-lg ml-3 hover:bg-green-700 transition"
+          >
+            Update Course
+          </button>
+          <button
+            onClick={() => setIsEditCourseModalOpen(false)} // Close the Edit Course modal
+            className="bg-red-500 text-white px-4 py-2 rounded-lg ml-3 hover:bg-red-700 transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
