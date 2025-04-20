@@ -150,8 +150,6 @@ useEffect(() => {
       educational_attainment,
       age,
       privacyConsent,
-      selectedCourse,
-      selectedSchedule,
     };
   
     // Check for blank fields safely
@@ -212,8 +210,6 @@ useEffect(() => {
       educational_attainment,
       age,
       privacyConsent,
-      selectedCourse,
-      selectedSchedule,
     };
   
     try {
