@@ -52,6 +52,9 @@ const [selectedCourse, setSelectedCourse] = useState(""); // State for selected 
 const [trainingSchedules, setTrainingSchedules] = useState([]);
 const [selectedSchedule, setSelectedSchedule] = useState("");
 const [selectedNcTier, setSelectedNcTier] = useState("");
+const [clientType, setClientType] = useState("");
+
+const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
 
 useEffect(() => {
@@ -126,8 +129,16 @@ useEffect(() => {
       router.push('/sign-in');
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const openConfirmModal = () => {
+    setConfirmModalOpen(true);
+  };
+  
+  // Function to close the modal
+  const closeConfirmModal = () => {
+    setConfirmModalOpen(false);
+  };
+
+  const handleRegister = async () => {
   
     const requiredFields = {
       email,
@@ -142,11 +153,12 @@ useEffect(() => {
       employment,
       educational_attainment,
       age,
+      privacyConsent,
     };
   
-    // Check for blank fields safely
     const missingFields = [];
   
+    // Check for missing fields
     for (const [key, value] of Object.entries(requiredFields)) {
       if (
         value === null ||
@@ -165,25 +177,22 @@ useEffect(() => {
       return;
     }
   
-    // Check if contact_number is exactly 11 digits
+    // Validate contact number and email
     if (!/^\d{11}$/.test(contact_number)) {
       toast.error("Contact number must be exactly 11 digits.");
       return;
     }
   
-    // Check if email is valid
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       toast.error("Please enter a valid email address.");
       return;
     }
   
-    // Check if privacy consent is checked
     if (!privacyConsent) {
-      toast.error("You must agree to the privacy policy to proceed.");
+      toast.info("You must agree to the privacy policy to proceed.");
       return;
     }
   
-    // Proceed with saving
     const updatedUserData = {
       username,
       email,
@@ -204,22 +213,56 @@ useEffect(() => {
   
     try {
       const response = await GlobalApi.updateUser(user.id, updatedUserData, jwt);
-      console.log('API Response:', response);
+      console.log('User update response:', response);
   
       if (response?.id) {
         setUser(response);
         sessionStorage.setItem('user', JSON.stringify(response));
-        toast.success("Profile updated successfully!", {
-          duration: 3000,
-        });
+        toast.success("Profile updated successfully!", { duration: 3000 });
+  
+        // Log enrollment data before sending
+        console.log("Selected Course:", selectedCourse);
+        console.log("Selected NC Tier:", selectedNcTier);
+        console.log("Full Name:", `${first_name} ${middle_name} ${last_name}`);
+        console.log("Email:", email);
+        console.log("Schedule:", selectedSchedule);
+        console.log("Client Type:", clientType);
+  
+        // Ensure all required fields for enrollment are available
+        if (!selectedCourse || !selectedNcTier || !selectedSchedule || !clientType) {
+          toast.error("Please make sure all required fields are selected.");
+          return;
+        }
+  
+        // Create enrollment data with the correct key name
+        const enrollmentData = {
+          data: {
+            Course_Name: selectedCourse.Course_Name,  // Corrected field name for Course Name
+            NCtier: selectedNcTier,                   // Corrected field name for NCTier
+            Students_Name: `${first_name} ${middle_name} ${last_name} ${suffix}`,
+            Students_Email: email,
+            Schedule: selectedSchedule,
+            Client_Type: clientType,
+          }
+        };
+  
+        const enrollResponse = await GlobalApi.createTrainingEnrollment(enrollmentData, jwt);
+        console.log('Enrollment response:', enrollResponse);
+  
+        if (enrollResponse?.data?.id) {
+          toast.success("Enrollment created successfully!");
+        } else {
+          toast.error("Failed to create enrollment.");
+        }
       } else {
         toast.error("Something went wrong. Please try again.");
       }
     } catch (error) {
-      console.error("Error saving changes:", error);
+      console.error("Error during registration:", error);
       toast.error("Failed to save changes. Please try again.");
     }
   };
+
   
   
   
@@ -320,9 +363,9 @@ useEffect(() => {
         <h2 className="text-3xl font-bold mb-2">Training Registration</h2>
         <h2 className="text-lg font-bold mb-4 ml-1 text-gray-600">Please fill up the corresponding fields.<span className="text-lg font-normal mb-4 ml-1 text-blue-500">Update the fields if needed</span></h2>
 
-        <form onSubmit={handleRegister}>
+        <form>
 
-         {/* Course Selection */}
+        {/* Course Selection */}
 <div className="mb-5 w-full">
   <label className="block text-sm font-semibold mt-4">
     Select Qualification
@@ -352,10 +395,10 @@ useEffect(() => {
 
 
 
-{/* Training Schedule, NC Tier, and Training Type in one row */}
+{/* Training Type & Schedule Row */}
 {selectedCourse && trainingSchedules.length > 0 && (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-
+    
     {/* Training Schedule */}
     <div className="w-full">
       <label className="block text-sm font-semibold mt-2">
@@ -367,44 +410,66 @@ useEffect(() => {
         className="w-full p-3 border rounded-md"
       >
         {trainingSchedules.filter((sched) => {
-          const scheduleDate = new Date(sched.Schedule_date);
-          return scheduleDate >= new Date();
-        }).length > 0 ? (
-          <>
-            <option value="">Select Schedule</option>
-            {trainingSchedules
-              .filter((sched) => {
-                const scheduleDate = new Date(sched.Schedule_date);
-                return scheduleDate >= new Date();
-              })
-              .map((sched) => (
-                <option key={sched.id} value={sched.id}>
-                  {sched.Schedule_date} | {sched.Schedule_time}
-                </option>
-              ))}
-          </>
-        ) : (
-          <option disabled>No schedule available</option>
-        )}
+        const scheduleDate = new Date(sched.Schedule_date);
+        return scheduleDate >= new Date();
+      }).length > 0 ? (
+        <>
+          <option value="">Select Schedule</option>
+          {trainingSchedules
+            .filter((sched) => {
+              const scheduleDate = new Date(sched.Schedule_date);
+              return scheduleDate >= new Date();
+            })
+            .map((sched) => (
+              <option key={sched.id} value={`${sched.Schedule_date} | ${sched.Schedule_time}`}>
+                {sched.Schedule_date} | {sched.Schedule_time}
+              </option>
+            ))}
+        </>
+      ) : (
+        <option disabled>No schedule available</option>
+      )}
+      
       </select>
     </div>
 
-    {/* NC Tier */}
-    <div className="w-full">
-      <label className="block text-sm font-semibold mt-2">
-        NC Tier
-      </label>
-      <select
-        className="w-full p-3 border rounded-md"
-        value={selectedNcTier}
-        onChange={(e) => setSelectedNcTier(e.target.value)}
-      >
-        <option value="">Select NC Tier</option>
+{/* NC Tier */}
+<div className="w-full">
+  <label className="block text-sm font-semibold mt-2">
+    NC Tier
+  </label>
+  <select
+    className="w-full p-3 border rounded-md"
+    value={selectedNcTier}
+    onChange={(e) => setSelectedNcTier(e.target.value)}
+  >
+    <option value="">Select NC Tier</option>
+
+    {selectedCourse?.Course_Name === "Electrical Installation and Maintenance" && (
+      <>
         <option value="NC-II">NC-II</option>
         <option value="NC-III">NC-III</option>
-        <option value="NC-IV">NC-IV</option>
-      </select>
-    </div>
+      </>
+    )}
+
+    {selectedCourse?.Course_Name === "Solar PV Installation" && (
+      <option value="NC-II">NC-II</option>
+    )}
+
+    {selectedCourse &&
+      !["Electrical Installation and Maintenance", "Solar PV Installation"].includes(
+        selectedCourse.Course_Name
+      ) && (
+        <>
+          <option value="NC-II">NC-II</option>
+          <option value="NC-III">NC-III</option>
+          <option value="NC-IV">NC-IV</option>
+        </>
+      )}
+  </select>
+</div>
+
+
 
     {/* Training Type */}
     <div className="w-full">
@@ -413,8 +478,8 @@ useEffect(() => {
       </label>
       <select
         className="w-full p-3 border rounded-md"
-        value={selectedScholarship}
-        onChange={(e) => setSelectedScholarship(e.target.value)}
+        value={clientType}
+        onChange={(e) => setClientType(e.target.value)}
       >
         <option value="">Select Training Type</option>
         <option value="Paid Training">Paid Training</option>
@@ -424,10 +489,8 @@ useEffect(() => {
         <option value="others">Others</option>
       </select>
     </div>
-
   </div>
 )}
-
     
           <div className="border-4 border-blue-400 rounded-lg">
           <div className="mx-5 my-3">
@@ -629,13 +692,17 @@ useEffect(() => {
                 qualifications.
               </p>
 
-              {/* Button on the right */}
-              <div>
-                  <Button onClick={handleRegister}
-                  className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500">
-                    Submit Application
-                  </Button>
-              </div>
+
+ {/* Button on the right */}
+ <div>
+        <Button type="button" 
+                className="rounded-lg min-w-40 sm:min-w-48 h-10 sm:h-14 text-lg sm:text-2xl font-bold bg-blue-700 hover:bg-blue-400 text-white py-1 px-3 border-b-2 border-blue-700 hover:border-blue-500"
+                onClick = {openConfirmModal}
+        >
+          Submit Application
+        </Button>
+      </div>
+
             </div>
 
             {/* Radio buttons below the disclaimer */}
@@ -654,7 +721,67 @@ useEffect(() => {
           </div>
 
         </form>
+
       </div>
+
+{confirmModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-50">
+    <div className="bg-white p-0 rounded-lg shadow-lg max-w-3xl w-full max-h-[100vh] overflow-y-auto relative">
+  {/* Header Section with blue background */}
+  <div className="bg-blue-700 text-white p-6 rounded-t-lg">
+    <button
+      onClick={closeConfirmModal}
+      className="absolute top-3 right-4 text-2xl font-bold text-white"
+    >
+      &times;
+    </button>
+    <h2 className="text-2xl font-semibold mb-1">Confirm Submission</h2>
+    <p className="text-sm text-blue-100">Please review your information before submitting:</p>
+  </div>
+
+  {/* Content Section */}
+  <div className="p-6 space-y-2 text-sm text-gray-800 pr-2">
+  <p className="font-bold text-2xl text-center text-blue-700">
+    {selectedCourse?.Course_Name || "N/A"} {selectedNcTier || "N/A"}
+  </p>
+  <p className="font-semibold text-xl text-center">{selectedSchedule || "N/A"}</p>
+  <p className="text-center font-bold mb-4 text-xl">
+    {first_name} {middle_name} {last_name}{suffix}
+  </p>
+
+  {/* Two-column layout for user details */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+    <p><strong>Email:</strong> {email}</p>
+    <p><strong>Contact Number:</strong> {contact_number}</p>
+    <p><strong>Birthdate:</strong> {birthdate}</p>
+    <p><strong>Age:</strong> {age}</p>
+    <p><strong>Birthplace:</strong> {birthplace}</p>
+    <p><strong>Sex:</strong> {sex}</p>
+    <p><strong>Employment:</strong> {employment}</p>
+    <p><strong>Education:</strong> {educational_attainment}</p>
+    <p><strong>Address:</strong> {address}</p>
+    <p><strong>Client Type:</strong> {clientType || "N/A"}</p>
+    </div>
+
+    {/* Buttons */}
+    <div className="flex justify-end space-x-4 mt-6">
+      <button
+        onClick={closeConfirmModal}
+        className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleRegister}
+        className="px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-400"
+      >
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+  </div>
+)}
     </div>
   );
 }

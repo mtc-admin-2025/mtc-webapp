@@ -48,6 +48,7 @@ const createStudent = (studentData, jwt) => {
         }
     });
 };
+
 const createCourse = (courseData, jwt) => 
     axiosClient.post('/courses', { data: courseData }, {
         headers: { Authorization: `Bearer ${jwt}` }
@@ -141,6 +142,67 @@ const updateCourse = async (courseId, updatedCourse, jwt) => {
       throw error;
     }
   };
+
+
+  const createAssessmentEnrollment = (enrollmentData, jwt) => {
+    console.log("Sending enrollment data:", enrollmentData);
+  
+    return axiosClient.post('/assessments', {  // Ensure this is the correct endpoint
+      data: {
+        Course_Name: enrollmentData.data.Course_Name,  // Ensure correct field names
+        NCtier: enrollmentData.data.NCtier,            // Use correct field names (case-sensitive)
+        Students_Name: enrollmentData.data.Students_Name,
+        Students_Email: enrollmentData.data.Students_Email,
+        Schedule: enrollmentData.data.Schedule,
+        Client_Type: enrollmentData.data.Client_Type,
+        Competency: enrollmentData.data.Competency || null,  // Optional field handling
+        Confirmed: enrollmentData.data.Confirmed || null,    // Optional field handling
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${jwt}`  // Add JWT token in Authorization header
+      }
+    })
+    .then(resp => {
+      console.log("Enrollment created:", resp.data);
+      return resp.data;
+    })
+    .catch(error => {
+      console.error("Error creating enrollment:", error.response?.data || error.message);
+      throw error;
+    });
+  };
+
+  const createTrainingEnrollment = (enrollmentData, jwt) => {
+    console.log("Sending enrollment data:", enrollmentData);
+  
+    return axiosClient.post('/trainings', {  // Ensure this is the correct endpoint
+      data: {
+        Course_Name: enrollmentData.data.Course_Name,  // Ensure correct field names
+        NCtier: enrollmentData.data.NCtier,            // Use correct field names (case-sensitive)
+        Students_Name: enrollmentData.data.Students_Name,
+        Students_Email: enrollmentData.data.Students_Email,
+        Schedule: enrollmentData.data.Schedule,
+        Client_Type: enrollmentData.data.Client_Type,
+        Competency: enrollmentData.data.Competency || null,  // Optional field handling
+        Confirmed: enrollmentData.data.Confirmed || null,    // Optional field handling
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${jwt}`  // Add JWT token in Authorization header
+      }
+    })
+    .then(resp => {
+      console.log("Enrollment created:", resp.data);
+      return resp.data;
+    })
+    .catch(error => {
+      console.error("Error creating enrollment:", error.response?.data || error.message);
+      throw error;
+    });
+  };
+  
+  
   
   
 const GlobalApi = {
@@ -154,6 +216,8 @@ const GlobalApi = {
     deleteCourse,
     updateUser,
     updateCourse,
+    createAssessmentEnrollment,
+    createTrainingEnrollment,
     
 }
 
