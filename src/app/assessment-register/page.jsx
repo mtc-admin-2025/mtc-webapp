@@ -54,6 +54,8 @@ const [selectedCourse, setSelectedCourse] = useState(""); // State for selected 
 
 const [assessmentSchedules, setAssessmentSchedules] = useState([]);
 const [selectedSchedule, setSelectedSchedule] = useState("");
+const [selectedNcTier, setSelectedNcTier] = useState("");
+
 
 
 
@@ -362,43 +364,81 @@ const handleCourseSelect = (courseId) => {
 
 {/* Assessment Type & Schedule Row */}
 {selectedCourse && assessmentSchedules.length > 0 && (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
     
-    {/* Assessment Type */}
+    {/* Assessment Schedule */}
     <div className="w-full">
       <label className="block text-sm font-semibold mt-2">
         Assessment Schedule
       </label>
       <select
-    value={selectedSchedule}
-    onChange={(e) => setSelectedSchedule(e.target.value)}
-    className="w-full p-3 border rounded-md"
-  >
-    {assessmentSchedules.filter((sched) => {
-      const [month, day, year] = sched.Schedule_date.trim().split('/');
-      const scheduleDate = new Date(`${year}-${month}-${day}`);
-      return scheduleDate >= new Date();
-    }).length > 0 ? (
-      <>
-        <option value="">Select Schedule</option>
-        {assessmentSchedules
-          .filter((sched) => {
-            const [month, day, year] = sched.Schedule_date.trim().split('/');
-            const scheduleDate = new Date(`${year}-${month}-${day}`);
-            return scheduleDate >= new Date();
-          })
-          .map((sched) => (
-            <option key={sched.id} value={sched.id}>
-              {sched.Schedule_date} | {sched.Schedule_time}
-            </option>
-          ))}
-      </>
-    ) : (
-      <option disabled>No schedule available</option>
-    )}
-  </select>
+        value={selectedSchedule}
+        onChange={(e) => setSelectedSchedule(e.target.value)}
+        className="w-full p-3 border rounded-md"
+      >
+        {assessmentSchedules.filter((sched) => {
+        const scheduleDate = new Date(sched.Schedule_date);
+        return scheduleDate >= new Date();
+      }).length > 0 ? (
+        <>
+          <option value="">Select Schedule</option>
+          {assessmentSchedules
+            .filter((sched) => {
+              const scheduleDate = new Date(sched.Schedule_date);
+              return scheduleDate >= new Date();
+            })
+            .map((sched) => (
+              <option key={sched.id} value={sched.id}>
+                {sched.Schedule_date} | {sched.Schedule_time}
+              </option>
+            ))}
+        </>
+      ) : (
+        <option disabled>No schedule available</option>
+      )}
+      
+      </select>
     </div>
 
+{/* NC Tier */}
+<div className="w-full">
+  <label className="block text-sm font-semibold mt-2">
+    NC Tier
+  </label>
+  <select
+    className="w-full p-3 border rounded-md"
+    value={selectedNcTier}
+    onChange={(e) => setSelectedNcTier(e.target.value)}
+  >
+    <option value="">Select NC Tier</option>
+
+    {selectedCourse?.Course_Name === "Electrical Installation and Maintenance" && (
+      <>
+        <option value="NC-II">NC-II</option>
+        <option value="NC-III">NC-III</option>
+      </>
+    )}
+
+    {selectedCourse?.Course_Name === "Solar PV Installation" && (
+      <option value="NC-II">NC-II</option>
+    )}
+
+    {selectedCourse &&
+      !["Electrical Installation and Maintenance", "Solar PV Installation"].includes(
+        selectedCourse.Course_Name
+      ) && (
+        <>
+          <option value="NC-II">NC-II</option>
+          <option value="NC-III">NC-III</option>
+          <option value="NC-IV">NC-IV</option>
+        </>
+      )}
+  </select>
+</div>
+
+
+
+    {/* Assessment Type */}
     <div className="w-full">
       <label className="block text-sm font-semibold mt-2">
         Assessment Type
@@ -418,6 +458,7 @@ const handleCourseSelect = (courseId) => {
     </div>
   </div>
 )}
+
     
           <div className="border-4 border-blue-400 rounded-lg">
           <div className="mx-5 my-3">
@@ -617,6 +658,35 @@ const handleCourseSelect = (courseId) => {
 </div>
 
           </div>
+          <div className="flex flex-wrap gap-4 mb-5">
+
+  {/* Mother's Name */}
+  <div className="flex-[0.5]">
+    <label className="block text-sm font-semibold">Mother Full Name</label>
+    <Input
+      type="text"
+      placeholder="Enter Mother Full Name"
+      value={mother_name}
+      onChange={(e) => setMotherName(e.target.value)}
+      className="w-full p-2 border rounded"
+    />
+  </div>
+
+  {/* Father's Name */}
+  <div className="flex-[0.5]">
+    <label className="block text-sm font-semibold">Father Full Name</label>
+    <Input
+      type="text"
+      placeholder="Enter Father Full Name"
+      value={father_name}
+      onChange={(e) => setFatherName(e.target.value)}
+      className="w-full p-2 border rounded"
+    />
+  </div>
+
+</div>
+
+          
           </div></div>
           
           <div className="mt-10">

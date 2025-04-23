@@ -51,6 +51,7 @@ const [selectedCourse, setSelectedCourse] = useState(""); // State for selected 
 
 const [trainingSchedules, setTrainingSchedules] = useState([]);
 const [selectedSchedule, setSelectedSchedule] = useState("");
+const [selectedNcTier, setSelectedNcTier] = useState("");
 
 
 useEffect(() => {
@@ -351,10 +352,11 @@ useEffect(() => {
 
 
 
-{/* Training Type & Schedule Row */}
+{/* Training Schedule, NC Tier, and Training Type in one row */}
 {selectedCourse && trainingSchedules.length > 0 && (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-    
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+
+    {/* Training Schedule */}
     <div className="w-full">
       <label className="block text-sm font-semibold mt-2">
         Training Schedule
@@ -365,16 +367,14 @@ useEffect(() => {
         className="w-full p-3 border rounded-md"
       >
         {trainingSchedules.filter((sched) => {
-          const [month, day, year] = sched.Schedule_date.split('/');
-          const scheduleDate = new Date(`${year}-${month}-${day}`);
+          const scheduleDate = new Date(sched.Schedule_date);
           return scheduleDate >= new Date();
         }).length > 0 ? (
           <>
             <option value="">Select Schedule</option>
             {trainingSchedules
               .filter((sched) => {
-                const [month, day, year] = sched.Schedule_date.split('/');
-                const scheduleDate = new Date(`${year}-${month}-${day}`);
+                const scheduleDate = new Date(sched.Schedule_date);
                 return scheduleDate >= new Date();
               })
               .map((sched) => (
@@ -389,6 +389,24 @@ useEffect(() => {
       </select>
     </div>
 
+    {/* NC Tier */}
+    <div className="w-full">
+      <label className="block text-sm font-semibold mt-2">
+        NC Tier
+      </label>
+      <select
+        className="w-full p-3 border rounded-md"
+        value={selectedNcTier}
+        onChange={(e) => setSelectedNcTier(e.target.value)}
+      >
+        <option value="">Select NC Tier</option>
+        <option value="NC-II">NC-II</option>
+        <option value="NC-III">NC-III</option>
+        <option value="NC-IV">NC-IV</option>
+      </select>
+    </div>
+
+    {/* Training Type */}
     <div className="w-full">
       <label className="block text-sm font-semibold mt-2">
         Training Type
@@ -406,8 +424,10 @@ useEffect(() => {
         <option value="others">Others</option>
       </select>
     </div>
+
   </div>
 )}
+
     
           <div className="border-4 border-blue-400 rounded-lg">
           <div className="mx-5 my-3">

@@ -33,18 +33,9 @@ export default function Profile() {
       setIsLogin(true);
       setUser(storedUser);
       setJwt(storedJwt);
-      fetchEnrolledCourses(storedUser.email, storedJwt);
     }
   }, []);
 
-  const fetchEnrolledCourses = async (email, jwt) => {
-    try {
-      const courses = await GlobalApi.getEnrolledCourses(email, jwt);
-      setEnrolledCourses(courses);
-    } catch (error) {
-      console.error("Error fetching enrolled courses:", error);
-    }
-  };
 
   const courseImageMap = [
     { keyword: "Electrical", image: "/eimassessment.jpg" },
@@ -203,29 +194,6 @@ export default function Profile() {
           <p className="text-6xl font-bold text-white text-center">{user?.username}&apos;s Profile</p>
         </div>
 
-        <div className="mt-5">
-          <h2 className="text-2xl font-bold text-white text-center">Enrolled Courses</h2>
-          {enrolledCourses.length > 0 ? (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {enrolledCourses.map(course => (
-                <div 
-                  key={course.id} 
-                  className="bg-[#13346d] text-white rounded-lg shadow-lg overflow-hidden p-6"
-                >
-                  <img 
-                    src={getImageForCourse(course.Course_Name)} 
-                    alt={course.Course_Name} 
-                    className="w-full h-48 object-cover rounded-md mb-4" 
-                  />
-                  <h3 className="text-xl font-bold">{course.Course_Name}</h3>
-                  <p className="text-sm text-gray-300 mt-2">{course.Course_Description}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-lg text-white">No courses enrolled.</p>
-          )}
-        </div>
 
         {/* Manage Profile Button */}
         <div className="mt-6 text-center">

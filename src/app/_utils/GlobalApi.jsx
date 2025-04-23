@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 
 const axiosClient=axios.create({
-    baseURL:'https://sparkling-nest-3874afd96c.strapiapp.com/api'
+    baseURL:'https://wonderful-ball-735c4b8f11.strapiapp.com/api'
 })
 
 const registerUser=(username,email,password)=>axiosClient.post('/auth/local/register',{
@@ -63,22 +63,6 @@ const deleteCourse = (courseId, jwt) => {
     });
 };
 
-const getEnrolledCourses = (userEmail, jwt) => {
-    return axiosClient.get('/enrolls?populate=*', {
-        headers: { Authorization: `Bearer ${jwt}` }
-    }).then(resp => {
-        // Filter enrollments based on the user's email
-        const userEnrollments = resp.data.data.filter(enrollment =>
-            enrollment.students.some(student => student.Email === userEmail)
-        );
-
-        // Extract enrolled courses
-        return userEnrollments.flatMap(enrollment => enrollment.courses);
-    }).catch(error => {
-        console.error("Error fetching enrolled courses:", error);
-        throw error;
-    });
-};
 
 const updateUser = (userId, updatedUser, jwt) => {
     console.log("Updating user with ID:", userId);
@@ -168,7 +152,6 @@ const GlobalApi = {
     createStudent,
     createCourse,
     deleteCourse,
-    getEnrolledCourses,
     updateUser,
     updateCourse,
     
