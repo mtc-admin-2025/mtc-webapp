@@ -20,9 +20,18 @@ const getCourses=()=>axiosClient.get('/courses?populate=*').then(resp=>{
     return resp.data.data
 });
 
-const getStudents=()=>axiosClient.get('/students?populate=*').then(resp=>{
-    return resp.data.data
-});
+const getUsers = () => {
+  return axiosClient.get('/users?populate=*')
+    .then(resp => {
+      console.log("API Response:", resp);  // Log the full response
+      return resp.data.data;  // Make sure you're accessing the right part of the response
+    })
+    .catch(error => {
+      console.error("Error fetching users:", error);
+      return []; // Return an empty array on error
+    });
+};
+
 
 const getUser = (jwt) => {
     return axiosClient.get('/users/me', {
@@ -36,16 +45,6 @@ const getUser = (jwt) => {
             email: user.email,
             password: user.password,
         };
-    });
-};
-
-const createStudent = (studentData, jwt) => {
-    return axiosClient.post('/students', {
-        data: studentData 
-    }, {
-        headers: {
-            Authorization: `Bearer ${jwt}`
-        }
     });
 };
 
@@ -157,6 +156,38 @@ const updateCourse = async (courseId, updatedCourse, jwt) => {
         Client_Type: enrollmentData.data.Client_Type,
         Competency: enrollmentData.data.Competency || null,  // Optional field handling
         Confirmed: enrollmentData.data.Confirmed || null,    // Optional field handling
+        users_permissions_user: enrollmentData.data.users_permissions_user,  // Add user ID here
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${jwt}`  // Add JWT token in Authorization header
+      }
+    })
+    .then(resp => {
+      console.log("Enrollment created:", resp.data);
+      return resp.data;
+    })
+    .catch(error => {
+      console.error("Error creating enrollment:", error.response?.data || error.message);
+      throw error;
+    });
+  };
+  
+
+  const createTrainingEnrollment = (enrollmentData, jwt) => {
+    console.log("Sending enrollment data:", enrollmentData);
+  
+    return axiosClient.post('/trainings', {  // Ensure this is the correct endpoint
+      data: {
+        Course_Name: enrollmentData.data.Course_Name,  // Ensure correct field names
+        NCtier: enrollmentData.data.NCtier,            // Use correct field names (case-sensitive)
+        Students_Name: enrollmentData.data.Students_Name,
+        Students_Email: enrollmentData.data.Students_Email,
+        Schedule: enrollmentData.data.Schedule,
+        Client_Type: enrollmentData.data.Client_Type,
+        Competency: enrollmentData.data.Competency || null,  // Optional field handling
+        Confirmed: enrollmentData.data.Confirmed || null,    // Optional field handling
+        users_permissions_user: enrollmentData.data.users_permissions_user,
       }
     }, {
       headers: {
@@ -173,35 +204,23 @@ const updateCourse = async (courseId, updatedCourse, jwt) => {
     });
   };
 
-  const createTrainingEnrollment = (enrollmentData, jwt) => {
-    console.log("Sending enrollment data:", enrollmentData);
   
-    return axiosClient.post('/trainings', {  // Ensure this is the correct endpoint
-      data: {
-        Course_Name: enrollmentData.data.Course_Name,  // Ensure correct field names
-        NCtier: enrollmentData.data.NCtier,            // Use correct field names (case-sensitive)
-        Students_Name: enrollmentData.data.Students_Name,
-        Students_Email: enrollmentData.data.Students_Email,
-        Schedule: enrollmentData.data.Schedule,
-        Client_Type: enrollmentData.data.Client_Type,
-        Competency: enrollmentData.data.Competency || null,  // Optional field handling
-        Confirmed: enrollmentData.data.Confirmed || null,    // Optional field handling
-      }
-    }, {
+  const getAssessments = (jwt) => {
+    return axiosClient.get('/assessments?populate=*', {
       headers: {
-        Authorization: `Bearer ${jwt}`  // Add JWT token in Authorization header
+        Authorization: `Bearer ${jwt}`
       }
-    })
-    .then(resp => {
-      console.log("Enrollment created:", resp.data);
-      return resp.data;
-    })
-    .catch(error => {
-      console.error("Error creating enrollment:", error.response?.data || error.message);
-      throw error;
-    });
+    }).then(resp => resp.data.data);
   };
   
+
+  const getTrainings = (jwt) => {
+    return axiosClient.get('/trainings?populate=*', {
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      }
+    }).then(resp => resp.data.data);
+  };
   
   
   
@@ -209,15 +228,18 @@ const GlobalApi = {
     registerUser,
     SignIn,
     getCourses,
-    getStudents,
     getUser,
-    createStudent,
     createCourse,
     deleteCourse,
     updateUser,
     updateCourse,
     createAssessmentEnrollment,
     createTrainingEnrollment,
+    getAssessments,
+    getTrainings,
+    getUsers
+
+
     
 }
 

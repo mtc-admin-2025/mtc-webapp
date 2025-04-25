@@ -56,6 +56,34 @@ const [clientType, setClientType] = useState("");
 
 const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
+const [trainingList, setTrainingList] = useState([]);
+
+useEffect(() => {
+  const fetchTrainings = async () => {
+    try {
+      if (!jwt || !user || !user.id) return;  // Ensure user ID is available
+
+      const trainings = await GlobalApi.getTrainings(jwt); // Fetch trainings instead of assessments
+
+      console.log("Fetched trainings:", trainings);
+
+      // Filter trainings based on the user's ID
+      const userTrainings = trainings.filter(
+        (t) => t?.users_permissions_user?.id === user.id // Filter by user ID
+      );
+
+      console.log("Filtered user trainings:", userTrainings);
+
+      setTrainingList(userTrainings); // Update trainingList state
+    } catch (error) {
+      console.error("Error fetching trainings:", error);
+    }
+  };
+
+  fetchTrainings();
+}, [jwt, user]);
+
+
 
 useEffect(() => {
   const fetchCourses = async () => {
@@ -237,9 +265,10 @@ useEffect(() => {
         // Create enrollment data with the correct key name
         const enrollmentData = {
           data: {
-            Course_Name: selectedCourse.Course_Name,  // Corrected field name for Course Name
-            NCtier: selectedNcTier,                   // Corrected field name for NCTier
-            Students_Name: `${first_name} ${middle_name} ${last_name} ${suffix}`,
+            users_permissions_user: user.id,  // This dynamically picks the logged-in user's ID
+            Course_Name: selectedCourse.Course_Name,  
+            NCtier: selectedNcTier,                   
+            Students_Name: `${first_name} ${middle_name} ${last_name}${suffix}`,
             Students_Email: email,
             Schedule: selectedSchedule,
             Client_Type: clientType,
@@ -364,8 +393,7 @@ useEffect(() => {
         <h2 className="text-lg font-bold mb-4 ml-1 text-gray-600">Please fill up the corresponding fields.<span className="text-lg font-normal mb-4 ml-1 text-blue-500">Update the fields if needed</span></h2>
 
         <form>
-
-        {/* Course Selection */}
+{/* Course Selection */}
 <div className="mb-5 w-full">
   <label className="block text-sm font-semibold mt-4">
     Select Qualification
@@ -374,26 +402,48 @@ useEffect(() => {
     {courses
       .slice()
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-      .map((course, index) => (
-        <button
-          key={index}
-          type="button"
-          onClick={() => {
-            setSelectedCourse(course);
-            setTrainingSchedules(course.TrainingSchedule || []);
-            setSelectedSchedule(""); // Reset previous schedule
-          }}
-          className={`w-full p-3 border rounded-xl ${
-            selectedCourse?.id === course.id ? 'bg-blue-700' : 'bg-blue-400'
-          } text-white hover:bg-blue-700 transition`}
-        >
-          {course.Course_Name}
-        </button>
-      ))}
+      .map((course, index) => {
+        // Check if the user is already enrolled in the course with null competency
+        const isEnrolledWithNullCompetency = trainingList.some(
+          (enrollment) =>
+            enrollment.Course_Name === course.Course_Name && enrollment.Competency === null
+        );
+
+        return (
+          <div key={index}>
+            {isEnrolledWithNullCompetency ? (
+              <>
+                <button
+                  type="button"
+                  disabled
+                  className="w-full p-3 border rounded-xl bg-gray-400 text-white cursor-not-allowed"
+                >
+                  {course.Course_Name}
+                </button>
+                <p className="text-red-500 text-sm text-center">
+                  You cannot enroll in this course (duplicate enrollment).
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCourse(course);
+                  setTrainingSchedules(course.TrainingSchedule || []);
+                  setSelectedSchedule(""); // Reset previous schedule
+                }}
+                className={`w-full p-3 border rounded-xl ${
+                  selectedCourse?.id === course.id ? "bg-blue-700" : "bg-blue-400"
+                } text-white hover:bg-blue-700 transition`}
+              >
+                {course.Course_Name}
+              </button>
+            )}
+          </div>
+        );
+      })}
   </div>
 </div>
-
-
 
 {/* Training Type & Schedule Row */}
 {selectedCourse && trainingSchedules.length > 0 && (

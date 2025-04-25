@@ -36,6 +36,12 @@ export default function Profile() {
     }
   }, []);
 
+  
+  const onSignOut = () => {
+    sessionStorage.clear();
+    router.push("/sign-in");
+  };
+
 
   const courseImageMap = [
     { keyword: "Electrical", image: "/eimassessment.jpg" },
@@ -185,6 +191,7 @@ export default function Profile() {
               <DropdownMenuSeparator />
               {user?.username === "Admin" && <Link href="/admin-dashboard"><DropdownMenuItem>Dashboard</DropdownMenuItem></Link>}
               <Link href="/my-profile"><DropdownMenuItem>Profile</DropdownMenuItem></Link>
+              <DropdownMenuItem onClick={onSignOut}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

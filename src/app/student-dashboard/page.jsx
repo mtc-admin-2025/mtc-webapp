@@ -35,6 +35,61 @@ export default function Home() {
   const router = useRouter();
   const [time, setTime] = useState("");
 
+
+const [assessmentList, setAssessmentList] = useState([]);
+const [trainingList, setTrainingList] = useState([]);
+
+
+useEffect(() => {
+  const fetchAssessments = async () => {
+    try {
+      if (!jwt || !user) return;
+
+      const assessments = await GlobalApi.getAssessments(jwt);
+
+      console.log("Fetched assessments:", assessments);
+
+      // Filter assessments based on the user ID instead of email
+      const userAssessments = assessments.filter(
+        (a) => a?.users_permissions_user?.id === user.id
+      );
+
+      console.log("Filtered user assessments:", userAssessments);
+
+      setAssessmentList(userAssessments);
+    } catch (error) {
+      console.error("Error fetching assessments:", error);
+    }
+  };
+
+  fetchAssessments();
+}, [jwt, user]);
+
+useEffect(() => {
+  const fetchTrainings = async () => {
+    try {
+      if (!jwt || !user) return;
+
+      const trainings = await GlobalApi.getTrainings(jwt);
+
+      console.log("Fetched trainings:", trainings);
+
+      // Filter trainings based on the user ID instead of email
+      const userTrainings = trainings.filter(
+        (a) => a?.users_permissions_user?.id === user.id
+      );
+
+      console.log("Filtered user trainings:", userTrainings);
+
+      setTrainingList(userTrainings);
+    } catch (error) {
+      console.error("Error fetching trainings:", error);
+    }
+  };
+
+  fetchTrainings();
+}, [jwt, user]);
+
   useEffect(() => {
       setIsLogin(sessionStorage.getItem('jwt') ? true : false);
       setUser(JSON.parse(sessionStorage.getItem('user')));
@@ -194,19 +249,86 @@ export default function Home() {
     </DropdownMenu>
   </div>
 
-  {/* Course & Training Lists */}
-  <section className="space-y-16 ml-5">
-    <div>
-      <Image
-        src="/MTCCOVER.png"
-        alt="logo"
-        width={1200}
-        height={500}
-        className="cursor-pointer w-full max-w-[500px] sm:max-w-[1000px] rounded-lg mt-24"
-      />
-    </div>
-    <h1 className="text-white font-bold text-4xl">Enrolled Programs</h1>
-  </section>
+  <section className="flex flex-col md:flex-row justify-between mt-24 ml-5 gap-10">
+  {/* Image Section */}
+  <div className="flex-shrink-0">
+    <Image
+      src="/MTCCOVER.png"
+      alt="logo"
+      width={1500}
+      height={500}
+      className="cursor-pointer w-full max-w-[500px] sm:max-w-[1000px] rounded-lg"
+    />
+  </div>
+
+  <section className="ml-5 mr-10">
+  <div className="flex space-x-8"> {/* Flex container for two columns (Assessments & Trainings) */}
+    
+    {/* Enrolled Assessments Section */}
+    <div className="flex-grow w-full md:w-1/2">
+  <h1 className="text-white font-bold text-4xl mt-3">Enrolled Assessments</h1>
+  <div className="grid grid-cols-1 gap-6 mt-5">
+    {assessmentList.length > 0 ? (
+      assessmentList.map((item, index) => (
+        <div
+          key={index}
+          className="bg-gradient-to-r from-blue-950 to-blue-900 rounded-xl p-6 shadow-lg flex flex-col hover:scale-105 transform transition duration-300"
+        >
+          <p className="text-xl font-extrabold text-white ">
+            {item.Course_Name}
+          </p>
+          <p className="text-xl font-extrabold text-white mb-4">
+            {item.NCtier}
+          </p>
+          <p className="text-md text-gray-200 font-medium mb-1">
+            <span className="font-bold">{item.Schedule}</span> 
+          </p>
+          <p className="text-md text-gray-200">
+            <span className="font-bold">Status:</span> {item.Confirmed ? item.Confirmed : "Pending"}
+          </p>
+        </div>
+      ))
+    ) : (
+      <p className="text-white">You are not enrolled in any assessments yet.</p>
+    )}
+  </div>
+</div>
+
+    {/* Enrolled Trainings Section */}
+    <div className="flex-grow w-full md:w-1/2">
+  <h1 className="text-white font-bold text-4xl mt-3">Enrolled Trainings</h1>
+  <div className="grid grid-cols-1 gap-6 mt-5">
+    {trainingList.length > 0 ? (
+      trainingList.map((item, index) => (
+        <div
+          key={index}
+          className="bg-gradient-to-r from-blue-950 to-blue-900 rounded-xl p-6 shadow-lg flex flex-col hover:scale-105 transform transition duration-300"
+        >
+          <p className="text-xl font-extrabold text-white ">
+            {item.Course_Name}
+          </p>
+          <p className="text-xl font-extrabold text-white mb-4">
+            {item.NCtier}
+          </p>
+          <p className="text-md text-gray-200 font-medium mb-1">
+            <span className="font-bold">{item.Schedule}</span> 
+          </p>
+          <p className="text-md text-gray-200">
+            <span className="font-bold">Status:</span> {item.Confirmed ? item.Confirmed : "Pending"}
+          </p>
+        </div>
+      ))
+    ) : (
+      <p className="text-white">You are not enrolled in any trainings yet.</p>
+    )}
+  </div>
+</div>
+
+
+  </div>
+</section>
+
+</section>
 </main>
       </div>
     );

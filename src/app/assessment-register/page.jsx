@@ -59,9 +59,33 @@ const [clientType, setClientType] = useState("");
 
 const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
+const [assessmentList, setAssessmentList] = useState([]);
 
 
+useEffect(() => {
+  const fetchAssessments = async () => {
+    try {
+      if (!jwt || !user || !user.id) return;  // Ensure user ID is available
 
+      const assessments = await GlobalApi.getAssessments(jwt);
+
+      console.log("Fetched assessments:", assessments);
+
+      // Filter assessments based on the user's ID
+      const userAssessments = assessments.filter(
+        (a) => a?.users_permissions_user?.id === user.id
+      );
+
+      console.log("Filtered user assessments:", userAssessments);
+
+      setAssessmentList(userAssessments); // Update assessmentList state
+    } catch (error) {
+      console.error("Error fetching assessments:", error);
+    }
+  };
+
+  fetchAssessments();
+}, [jwt, user]);
 
 useEffect(() => {
   const fetchCourses = async () => {
@@ -147,7 +171,6 @@ useEffect(() => {
   };
 
   const handleRegister = async () => {
-  
     const requiredFields = {
       email,
       first_name,
@@ -234,25 +257,18 @@ useEffect(() => {
         sessionStorage.setItem('user', JSON.stringify(response));
         toast.success("Profile updated successfully!", { duration: 3000 });
   
-        // Log enrollment data before sending
-        console.log("Selected Course:", selectedCourse);
-        console.log("Selected NC Tier:", selectedNcTier);
-        console.log("Full Name:", `${first_name} ${middle_name} ${last_name}`);
-        console.log("Email:", email);
-        console.log("Schedule:", selectedSchedule);
-        console.log("Client Type:", clientType);
-  
         // Ensure all required fields for enrollment are available
         if (!selectedCourse || !selectedNcTier || !selectedSchedule || !clientType) {
           toast.error("Please make sure all required fields are selected.");
           return;
         }
   
-        // Create enrollment data with the correct key name
+        // Create enrollment data with the correct user ID for the logged-in user
         const enrollmentData = {
           data: {
-            Course_Name: selectedCourse.Course_Name,  // Corrected field name for Course Name
-            NCtier: selectedNcTier,                   // Corrected field name for NCTier
+            users_permissions_user: user.id,  // This dynamically picks the logged-in user's ID
+            Course_Name: selectedCourse.Course_Name,  
+            NCtier: selectedNcTier,                   
             Students_Name: `${first_name} ${middle_name} ${last_name}${suffix}`,
             Students_Email: email,
             Schedule: selectedSchedule,
@@ -276,6 +292,7 @@ useEffect(() => {
       toast.error("Failed to save changes. Please try again.");
     }
   };
+  
 
   
   const handleAddressChange = async (e) => { // Updated function to handle "address"
@@ -386,26 +403,48 @@ const handleCourseSelect = (courseId) => {
     {courses
       .slice()
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-      .map((course, index) => (
-        <button
-          key={index}
-          type="button"
-          onClick={() => {
-            setSelectedCourse(course);
-            setAssessmentSchedules(course.AssessmentSchedule || []);
-            setSelectedSchedule(""); // Reset previous schedule
-          }}
-          className={`w-full p-3 border rounded-xl ${
-            selectedCourse?.id === course.id ? 'bg-blue-700' : 'bg-blue-400'
-          } text-white hover:bg-blue-700 transition`}
-        >
-          {course.Course_Name}
-        </button>
-      ))}
+      .map((course, index) => {
+        // Check if the user is already enrolled in the course with null competency
+        const isEnrolledWithNullCompetency = assessmentList.some(
+          (enrollment) =>
+            enrollment.Course_Name === course.Course_Name && enrollment.Competency === null
+        );
+
+        return (
+          <div key={index}>
+            {isEnrolledWithNullCompetency ? (
+              <>
+                <button
+                  type="button"
+                  disabled
+                  className="w-full p-3 border rounded-xl bg-gray-400 text-white cursor-not-allowed"
+                >
+                  {course.Course_Name}
+                </button>
+                <p className="text-red-500 text-sm text-center">
+                  You cannot enroll in this course (duplicate enrollment).
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCourse(course);
+                  setAssessmentSchedules(course.AssessmentSchedule || []);
+                  setSelectedSchedule(""); // Reset previous schedule
+                }}
+                className={`w-full p-3 border rounded-xl ${
+                  selectedCourse?.id === course.id ? "bg-blue-700" : "bg-blue-400"
+                } text-white hover:bg-blue-700 transition`}
+              >
+                {course.Course_Name}
+              </button>
+            )}
+          </div>
+        );
+      })}
   </div>
 </div>
-
-
 
 {/* Assessment Type & Schedule Row */}
 {selectedCourse && assessmentSchedules.length > 0 && (
