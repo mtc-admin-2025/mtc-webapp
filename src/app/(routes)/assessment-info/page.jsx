@@ -105,6 +105,22 @@ export default function AssessmentPage() {
     router.push("/sign-in");
   };
 
+  const handleDownloadJson = () => {
+    // Create a Blob from the JSON string (filteredSchedules is the data to download)
+    const jsonBlob = new Blob([JSON.stringify(filteredSchedules, null, 2)], {
+      type: "application/json",
+    });
+
+    // Create a link element to trigger the download
+    const url = URL.createObjectURL(jsonBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "schedules.txt"; // Specify the file name
+    a.click(); // Programmatically click the link to trigger the download
+    URL.revokeObjectURL(url); // Clean up after download
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex">
     {/* Sidebar */}
@@ -281,6 +297,13 @@ export default function AssessmentPage() {
         </tbody>
       </table>
         </div>
+        {/* Button to trigger JSON download */}
+      <button
+        onClick={handleDownloadJson}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Download Schedules JSON
+      </button>
     </div>
   </div>
   );

@@ -519,6 +519,7 @@ const handleCourseSelect = (courseId) => {
           <option value="NC-III">NC-III</option>
           <option value="NC-IV">NC-IV</option>
         </>
+        
       )}
   </select>
 </div>
