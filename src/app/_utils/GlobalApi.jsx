@@ -23,14 +23,16 @@ const getCourses=()=>axiosClient.get('/courses?populate=*').then(resp=>{
 const getUsers = () => {
   return axiosClient.get('/users?populate=*')
     .then(resp => {
-      console.log("API Response:", resp);  // Log the full response
-      return resp.data.data;  // Make sure you're accessing the right part of the response
+      console.log("Full Response:", resp);
+      console.log("Response Data:", resp.data);  // Log the entire data object
+      return resp.data.data;  // Ensure we're accessing the correct part
     })
     .catch(error => {
       console.error("Error fetching users:", error);
-      return []; // Return an empty array on error
+      return []; // Return an empty array in case of an error
     });
 };
+
 
 
 const getUser = (jwt) => {
@@ -221,8 +223,25 @@ const updateCourse = async (courseId, updatedCourse, jwt) => {
       }
     }).then(resp => resp.data.data);
   };
-  
-  
+
+  const getTrainers = (jwt) => {
+    return axiosClient.get('/trainers?populate=*', {
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      }
+    }).then(resp => resp.data.data);
+  };
+   
+  const createTrainer = (trainerData, jwt) => {
+    return axiosClient.post('/trainers', { data: trainerData }, {
+        headers: { Authorization: `Bearer ${jwt}` }
+    }).then(resp => resp.data.data)
+    .catch(error => {
+        console.error("Error creating trainer:", error);
+        throw error;
+    });
+};
+
   
 const GlobalApi = {
     registerUser,
@@ -237,7 +256,9 @@ const GlobalApi = {
     createTrainingEnrollment,
     getAssessments,
     getTrainings,
-    getUsers
+    getUsers,
+    getTrainers,
+    createTrainer,
 
 
     

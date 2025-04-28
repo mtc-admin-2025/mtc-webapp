@@ -37,21 +37,28 @@ function TrainingDetail({ course }) {
           </Button>
         </Link>
       </div>
-
-      {/* Right: Schedule Section */}
-      {upcomingSchedules.length > 0 ? (
-        <div className="text-black">
-          <h3 className="font-bold text-2xl text-blue-500">Schedule/s:</h3>
-          {upcomingSchedules.map((sched, index) => (
-            <div key={index} className="border p-4 rounded-lg mt-2 bg-blue-300">
-              <p><span className="font-semibold ">Date:</span> {sched.Schedule_date}</p>
-              <p><span className="font-semibold">Time:</span> {sched.Schedule_time}</p>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-blue-500 mt-4 text-center font-bold">No upcoming schedule/s available</p>
-      )}
+  {/* Right: Schedule Section */}
+  {upcomingSchedules.length > 0 ? (
+          <div className="text-blue-950">
+            <h3 className="font-bold text-2xl">Schedule/s:</h3>
+            {upcomingSchedules.map((sched, index) => (
+              <div key={index} className="p-4 rounded-lg mt-2 bg-blue-100 border-blue-950 shadow-md shadow-blue-200">
+                <div className="flex justify-between items-center">
+                  {/* Left side: Date and Time */}
+                  <div>
+                    <p className="text-2xl font-bold">{sched.Schedule_date}</p>
+                    <p className="text-xl font-bold">{sched.Schedule_time}</p>
+                  </div>
+                  {/* Right side: Slots */}
+                  <div className="text-right mr-10">
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-blue-500 mt-4 text-center font-bold">No upcoming schedules available</p>
+        )}
     </div>
   );
 }

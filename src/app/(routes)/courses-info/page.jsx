@@ -251,7 +251,7 @@ export default function CoursesPage() {
           </Link>
           <Link href="/students-info" className="p-6 rounded-lg flex items-center w-[350px] relative group">
             <UserRoundSearch className="h-11 w-11 ml-7 text-white" />
-            <h2 className="text-xl font-bold ml-7 text-white">Students</h2>
+            <h2 className="text-xl font-bold ml-7 text-white">Trainers</h2>
             <div className="absolute right-1 top-4 bottom-4 w-1 bg-white rounded opacity-0 group-hover:opacity-100 transition-opacity"></div> 
           </Link>
         </div>

@@ -450,39 +450,42 @@ const handleCourseSelect = (courseId) => {
 {selectedCourse && assessmentSchedules.length > 0 && (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
     
-    {/* Assessment Schedule */}
-    <div className="w-full">
-      <label className="block text-sm font-semibold mt-2">
-        Assessment Schedule
-      </label>
-      <select
-        value={selectedSchedule}
-        onChange={(e) => setSelectedSchedule(e.target.value)}
-        className="w-full p-3 border rounded-md"
-      >
-        {assessmentSchedules.filter((sched) => {
-        const scheduleDate = new Date(sched.Schedule_date);
-        return scheduleDate >= new Date();
-      }).length > 0 ? (
-        <>
-          <option value="">Select Schedule</option>
-          {assessmentSchedules
-            .filter((sched) => {
-              const scheduleDate = new Date(sched.Schedule_date);
-              return scheduleDate >= new Date();
-            })
-            .map((sched) => (
-              <option key={sched.id} value={`${sched.Schedule_date} | ${sched.Schedule_time}`}>
-                {sched.Schedule_date} | {sched.Schedule_time}
-              </option>
-            ))}
-        </>
-      ) : (
-        <option disabled>No schedule available</option>
-      )}
-      
-      </select>
-    </div>
+{/* Assessment Schedule */}
+<div className="w-full">
+  <label className="block text-sm font-semibold mt-2">
+    Assessment Schedule
+  </label>
+  <select
+    value={selectedSchedule}
+    onChange={(e) => setSelectedSchedule(e.target.value)}
+    className="w-full p-3 border rounded-md"
+  >
+    {assessmentSchedules.filter((sched) => {
+      const scheduleDate = new Date(sched.Schedule_date);
+      return scheduleDate >= new Date();
+    }).length > 0 ? (
+      <>
+        <option value="">Select Schedule</option>
+        {assessmentSchedules
+          .filter((sched) => {
+            const scheduleDate = new Date(sched.Schedule_date);
+            return scheduleDate >= new Date();
+          })
+          .map((sched) => (
+            <option className="font-bold"
+              key={sched.id} 
+              value={`${sched.Schedule_date} | ${sched.Schedule_time}`}
+            >
+              {sched.Schedule_date}| {sched.Schedule_time}-----({sched.Slot} slots)
+            </option>
+          ))}
+      </>
+    ) : (
+      <option disabled>No schedule available</option>
+    )}
+  </select>
+</div>
+
 
 {/* NC Tier */}
 <div className="w-full">
