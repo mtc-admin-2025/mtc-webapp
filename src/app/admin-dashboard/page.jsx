@@ -298,14 +298,20 @@ export default function Home() {
 
             {/* Enrolled Students Card - Below Assessments */}
             <div className="bg-white shadow-lg rounded-xl p-4 relative h-48">
+            <button className="absolute top-4 right-4 text-gray-600 hover:text-gray-800">
+                <EllipsisVertical className="w-6 h-6" />
+              </button>
               <div className="w-8 h-8 bg-blue-600 rounded-sm absolute top-4 left-4"></div>
-              <h2 className="text-xl font-semibold ml-16 mb-6 mt-1">Assessors Today</h2>
+              <h2 className="text-xl font-semibold ml-16 mb-6 mt-1"></h2>
             </div>
 
             {/* Upcoming Courses Card - Below Trainings */}
             <div className="bg-white shadow-lg rounded-xl p-4 relative h-48">
+            <button className="absolute top-4 right-4 text-gray-600 hover:text-gray-800">
+                <EllipsisVertical className="w-6 h-6" />
+              </button>
               <div className="w-8 h-8 bg-blue-600 rounded-sm absolute top-4 left-4"></div>
-              <h2 className="text-xl font-semibold ml-16 mb-6 mt-1">Trainers Today</h2>
+              <h2 className="text-xl font-semibold ml-16 mb-6 mt-1"></h2>
             </div>
           </div>
         </div>

@@ -24,6 +24,7 @@ import {
   Search,
   EllipsisVertical,
 } from "lucide-react";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogDescription } from "@/components/ui/dialog";
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
@@ -33,6 +34,10 @@ export default function Home() {
   const router = useRouter();
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null);
+  const [time, setTime] = useState("");
+
+
+  
 
   useEffect(() => {
     setIsLogin(sessionStorage.getItem("jwt") ? true : false);
@@ -60,6 +65,22 @@ export default function Home() {
       fetchTrainers();  // Call the function if JWT exists
     }
   }, [jwt]);
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTime(new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }));
+    };
+
+    updateTime(); // Set initial time
+    const interval = setInterval(updateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
 
   const onSignOut = () => {
     sessionStorage.clear();
@@ -150,7 +171,10 @@ export default function Home() {
             ))}
           </div>
         </div>
+        <div className="text-lg text-center text-white font-bold">{time}</div>
+        
       </div>
+      
 
       {/* Main Content */}
       <main className="ml-[420px] ">
@@ -175,49 +199,90 @@ export default function Home() {
 
 
 
-  <div> 
-    <h2 className="text-6xl font-bold text-white mb-4 mt-10 text-center">Trainers</h2>
-    {loading ? (
-      <p>Loading trainers...</p>
-    ) : error ? (
-      <p>{error}</p>
-    ) : trainers.length === 0 ? (
-      <p>No trainers available.</p>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {trainers.map((trainer) => (
-          <div key={trainer.Trainer_ID} className="bg-gray-100 p-4 rounded-xl shadow-lg">
-            {/* Display Trainer Information */}
-            <h3 className="font-semibold text-lg">{trainer.Name}</h3>
-            <p>{trainer.Specializations}</p>
-            <p className="text-gray-600">Trainer ID: {trainer.Trainer_ID}</p>
-            <p className="text-gray-600">Employed since: {trainer.Date_Employed}</p>
-            <p className="text-gray-600">Trainees Passed: {trainer.Trainees_Passed}</p>
-            <p className="text-gray-600">Trainees Ongoing: {trainer.Trainees_Ongoing}</p>
-            <p className="text-gray-600">Trainees Failed: {trainer.Trainees_Failed}</p>
+   {/* Trainers Section */}
+   <div>
+          <h2 className="text-6xl font-bold text-white mb-4 mt-10 text-center">Trainers</h2>
+          {loading ? (
+            <p>Loading trainers...</p>
+          ) : error ? (
+            <p>{error}</p>
+          ) : trainers.length === 0 ? (
+            <p>No trainers available.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {trainers
+        .sort((a, b) => b.Rating - a.Rating) // 👈 Sort by rating descending
+        .map((trainer) => {
+          const passed = Number(trainer.Trainees_Passed);
+          const failed = Number(trainer.Trainees_Failed);
+          const total = passed + failed;
+          const passedPercentage = total > 0 ? ((passed / total) * 100).toFixed(1) : "0.0";
+          const trainerImage = trainer.Image?.url || "/user.jpg";
 
-            {/* Display Star Rating */}
-            <div className="flex mt-2">
-              {Array.from({ length: 5 }, (_, index) => (
-                <span key={index}>
-                  {index < trainer.Rating ? (
-                    <span className="text-yellow-400 text-3xl">★</span> // Filled star
-                  ) : (
-                    <span className="text-gray-300 text-3xl">★</span> // Empty star
-                  )}
-                </span>
-              ))}
+                return (
+                  <Dialog key={trainer.Trainer_ID}>
+                    <DialogTrigger className="w-full">
+                      <div className="bg-opacity-50 bg-gray-700 relative p-4 flex flex-col gap-4 rounded-2xl shadow-xl hover:shadow-gray-600/50 transition-all ease-in-out cursor-pointer w-full h-[470px]">
+                        <Image
+                          src={trainerImage}
+                          width={300}
+                          height={300}
+                          alt={trainer.Name}
+                          className="rounded-t-2xl w-full h-[300px] object-cover"
+                          unoptimized
+                        />
+                        <div className="text-left flex-grow">
+                          <h2 className="font-bold text-2xl text-white">{trainer.Name}</h2>
+                          <p className="text-blue-300 font-semibold">{trainer.Specializations}</p>
+                          <div className="flex mt-2">
+                            {Array.from({ length: 5 }, (_, index) => (
+                              <span key={index}>
+                                {index < trainer.Rating ? (
+                                  <span className="text-yellow-400 text-2xl">★</span>
+                                ) : (
+                                  <span className="text-gray-300 text-2xl">★</span>
+                                )}
+                              </span>
+                            ))}
+                            <div className="mt-8">
+                            <p className="text-lg font-semibold text-blue-500 mt-auto">See Details</p></div>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    </DialogTrigger>
+
+                    <DialogContent className="max-w-4xl w-full p-6">
+                      <DialogHeader>
+                        <DialogDescription>
+                          <div className="space-y-3">
+                            <h2 className="text-3xl font-bold">{trainer.Name}</h2>
+                            <p><strong>Specializations:</strong> {trainer.Specializations}</p>
+                            <p><strong>Trainer ID:</strong> {trainer.Trainer_ID}</p>
+                            <p><strong>Date Employed:</strong> {trainer.Date_Employed}</p>
+                            <p><strong>Passing Rate:</strong> {passedPercentage}%</p>
+                            <p><strong>Ongoing Trainings:</strong> {trainer.Trainees_Ongoing}</p>
+                            <div className="flex">
+                              {Array.from({ length: 5 }, (_, index) => (
+                                <span key={index}>
+                                  {index < trainer.Rating ? (
+                                    <span className="text-yellow-400 text-xl">★</span>
+                                  ) : (
+                                    <span className="text-gray-300 text-xl">★</span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
+                );
+              })}
             </div>
-
-            {/* View Profile Button */}
-            <Link href={`/trainers/${trainer.id}`}>
-              <Button className="mt-4">View Details</Button>
-            </Link>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
+          )}
+        </div>
       </main>
     </div>
   );

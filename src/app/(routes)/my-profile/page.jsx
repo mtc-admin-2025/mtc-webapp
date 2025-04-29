@@ -23,6 +23,7 @@ export default function Profile() {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
   const [editedUser, setEditedUser] = useState({ username: "", email: "", password: "" }); // State to hold edited user data
+  const [time, setTime] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,23 @@ export default function Profile() {
   }, []);
 
   
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTime(new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }));
+    };
+
+    updateTime(); // Set initial time
+    const interval = setInterval(updateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
   const onSignOut = () => {
     sessionStorage.clear();
     router.push("/sign-in");
@@ -174,6 +192,7 @@ export default function Profile() {
             ))}
           </div>
         </div>
+        <div className="text-lg text-center text-white font-bold">{time}</div>
       </div>
 
       {/* Main Content */}

@@ -32,12 +32,29 @@ export default function Home() {
   const [isLogin, setIsLogin] = useState(false);
   const [user, setUser] = useState(null);
   const [jwt, setJwt] = useState(null);
+  const [time, setTime] = useState("");
   const router = useRouter();
 
   useEffect(() => {
       setIsLogin(sessionStorage.getItem('jwt') ? true : false);
       setUser(JSON.parse(sessionStorage.getItem('user')));
       setJwt(sessionStorage.getItem('jwt'));
+  }, []);
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTime(new Date().toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      }));
+    };
+
+    updateTime(); // Set initial time
+    const interval = setInterval(updateTime, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   const onSignOut = () => {
@@ -143,6 +160,7 @@ export default function Home() {
               ))}
             </div>
           </div>
+          <div className="text-lg text-center text-white font-bold">{time}</div>
         </div>
   
         {/* Main Content */}
