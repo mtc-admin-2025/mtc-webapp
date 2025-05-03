@@ -242,6 +242,13 @@ const updateCourse = async (courseId, updatedCourse, jwt) => {
     });
 };
 
+const createAssessment = (assessmentData, jwt) =>
+  axiosClient.post('/assessments', { data: assessmentData }, {
+      headers: { Authorization: `Bearer ${jwt}` }
+  }).then(resp => resp.data.data);
+
+
+
   
 const GlobalApi = {
     registerUser,
@@ -259,7 +266,7 @@ const GlobalApi = {
     getUsers,
     getTrainers,
     createTrainer,
-
+    createAssessment,
 
     
 }
